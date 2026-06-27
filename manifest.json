@@ -1,0 +1,17 @@
+{
+  "name": "Ikasi Euskara",
+  "short_name": "Euskara",
+  "description": "Aprende euskera jugando — 20 niveles, 6 modos, audios reales",
+  "start_url": "/euskera-audios/",
+  "display": "standalone",
+  "background_color": "#0f0f23",
+  "theme_color": "#0f0f23",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%230f0f23'/><text y='140' font-size='140' text-anchor='middle' x='96'>🎮</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}

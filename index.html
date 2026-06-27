@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="eu">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#0f0f23"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Ikasi Euskara"/>
+<meta name="description" content="Aprende euskera jugando — 20 niveles, 6 modos, audios reales"/>
+<title>Ikasi Euskara</title>
+<link rel="manifest" href="manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0f0f23;--panel:#1a1a3e;--border:#4a4a8a;--acc:#ffdd00;
+  --green:#00ff7f;--red:#ff4444;--blue:#4488ff;--purple:#cc44ff;
+  --white:#e8e8f0;--muted:#7777aa;--dark:#0a0a1a;--orange:#ff8800;
+}
+html,body{height:100%;overflow-x:hidden;}
+body{font-family:"Press Start 2P",monospace;background:var(--bg);color:var(--white);}
+#root{max-width:480px;margin:0 auto;padding:10px;min-height:100vh;padding-bottom:env(safe-area-inset-bottom);}
+.screen{display:none;}.screen.active{display:block;}
+
+/* START */
+.start-wrap{text-align:center;padding:30px 10px;}
+.start-logo{font-size:13px;color:var(--acc);text-shadow:3px 3px 0 #aa7700;letter-spacing:2px;margin-bottom:6px;animation:blink2 1.5s infinite;}
+.start-sub{font-size:5px;color:var(--muted);letter-spacing:2px;margin-bottom:30px;}
+.start-box{background:var(--panel);border:3px solid var(--border);box-shadow:5px 5px 0 var(--dark);padding:20px;margin-bottom:16px;text-align:left;}
+.start-label{font-size:6px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;}
+.start-input{font-family:"Press Start 2P",monospace;font-size:9px;background:var(--dark);border:3px solid var(--border);color:var(--white);padding:12px 10px;width:100%;outline:none;margin-bottom:16px;}
+.start-input:focus{border-color:var(--acc);}
+.continue-box{background:var(--dark);border:2px solid var(--green);padding:12px;margin-bottom:12px;font-size:7px;color:var(--green);cursor:pointer;text-align:center;}
+.press-start{font-size:9px;color:var(--acc);text-shadow:3px 3px 0 #aa7700;animation:blink2 .9s infinite;margin-top:10px;}
+@keyframes blink2{0%,100%{opacity:1;}50%{opacity:0;}}
+
+/* HUD */
+.hud{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+.hud-block{background:var(--dark);border:2px solid var(--border);padding:5px 7px;flex:1;min-width:60px;text-align:center;}
+.hud-label{font-size:4px;color:var(--muted);margin-bottom:3px;letter-spacing:1px;}
+.hud-val{font-size:10px;color:var(--acc);}
+.hearts{font-size:12px;line-height:1;}
+.xp-wrap{flex:2;min-width:110px;}
+.xp-track{background:var(--dark);border:2px solid var(--border);height:10px;margin-top:3px;}
+.xp-fill{height:100%;background:var(--acc);transition:width .3s;}
+.hud-name{font-size:5px;color:var(--purple);text-align:right;margin-bottom:4px;}
+
+/* NAV */
+.nav-tabs{display:flex;gap:4px;margin-bottom:8px;}
+.nav-tab{font-family:"Press Start 2P",monospace;background:var(--dark);border:2px solid var(--border);color:var(--muted);cursor:pointer;padding:7px 6px;font-size:5px;flex:1;text-align:center;}
+.nav-tab.active{background:var(--panel);border-color:var(--acc);color:var(--acc);}
+
+/* LEVELS */
+.level-row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;}
+.lvl-btn{font-family:"Press Start 2P",monospace;background:var(--dark);border:2px solid var(--border);box-shadow:3px 3px 0 #000;color:var(--muted);cursor:pointer;padding:7px 6px;font-size:5px;flex:1;min-width:50px;text-align:center;}
+.lvl-btn.active{border-color:var(--acc);color:var(--acc);}
+.lvl-btn.locked{opacity:.3;cursor:not-allowed;}
+
+/* TABS */
+.tab-row{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px;}
+.tab-btn{font-family:"Press Start 2P",monospace;background:var(--dark);border:2px solid var(--border);color:var(--muted);cursor:pointer;padding:7px 5px;font-size:5px;flex:1;text-align:center;}
+.tab-btn.active{background:var(--purple);border-color:#8822cc;color:#fff;box-shadow:3px 3px 0 #440088;}
+
+/* PROGRESS */
+.prog-track{background:var(--dark);border:2px solid var(--border);height:7px;margin-bottom:8px;}
+.prog-fill{height:100%;background:var(--blue);transition:width .3s;}
+
+/* GAME AREA */
+.game-area{background:var(--panel);border:3px solid var(--border);box-shadow:4px 4px 0 var(--dark);padding:12px;}
+.save-ind{font-size:4px;color:var(--muted);text-align:right;min-height:10px;margin-bottom:4px;}
+.q-type{font-size:5px;color:var(--purple);margin-bottom:7px;letter-spacing:1px;}
+.q-text{font-size:13px;color:var(--acc);margin-bottom:5px;line-height:1.8;word-break:break-word;}
+.q-hint{font-size:5px;color:var(--muted);margin-bottom:12px;letter-spacing:.5px;}
+.q-speak{background:none;border:none;font-size:16px;cursor:pointer;margin-left:6px;vertical-align:middle;padding:4px;}
+
+/* TIMER */
+.timer-row{display:flex;align-items:center;gap:7px;margin-bottom:8px;}
+.timer-track{flex:1;background:var(--dark);border:2px solid var(--border);height:9px;}
+.timer-fill{height:100%;background:var(--green);transition:width .1s linear;}
+.timer-num{font-size:8px;color:var(--green);min-width:16px;text-align:right;}
+
+/* OPTIONS */
+.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;}
+.opt-btn{font-family:"Press Start 2P",monospace;background:var(--dark);border:3px solid var(--border);box-shadow:4px 4px 0 #000;color:var(--white);cursor:pointer;padding:14px 8px;font-size:7px;line-height:1.7;text-align:center;word-break:break-word;width:100%;min-height:56px;}
+.opt-btn:active:not(.disabled){transform:translate(4px,4px);box-shadow:0 0 0 #000;}
+.opt-btn.correct{background:#003300;border-color:var(--green);color:var(--green);transform:translate(4px,4px);box-shadow:0 0 0;}
+.opt-btn.wrong{background:#330000;border-color:var(--red);color:var(--red);transform:translate(4px,4px);box-shadow:0 0 0;}
+.opt-btn.disabled{cursor:default;}
+
+/* MATCH */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;}
+.match-col{display:flex;flex-direction:column;gap:5px;}
+.match-item{font-family:"Press Start 2P",monospace;background:var(--dark);border:2px solid var(--border);box-shadow:3px 3px 0 #000;color:var(--white);cursor:pointer;padding:12px 6px;font-size:6px;text-align:center;line-height:1.6;min-height:48px;display:flex;align-items:center;justify-content:center;word-break:break-word;}
+.match-item.selected{border-color:var(--acc);color:var(--acc);background:#1a1600;transform:translate(3px,3px);box-shadow:0 0 0;}
+.match-item.matched{background:#003300;border-color:var(--green);color:var(--green);transform:translate(3px,3px);box-shadow:0 0 0;}
+.match-item.wrong-match{border-color:var(--red);color:var(--red);}
+
+/* FILL */
+.fill-in{font-family:"Press Start 2P",monospace;font-size:8px;background:var(--dark);border:3px solid var(--border);color:var(--white);padding:12px 10px;outline:none;width:100%;margin-bottom:8px;}
+.fill-in:focus{border-color:var(--acc);}
+.fill-in.correct{border-color:var(--green);color:var(--green);background:#001a00;}
+.fill-in.wrong{border-color:var(--red);color:var(--red);background:#1a0000;}
+
+/* BUILD */
+.word-bank{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.word-chip{font-family:"Press Start 2P",monospace;background:var(--dark);border:2px solid var(--border);box-shadow:3px 3px 0 #000;color:var(--white);cursor:pointer;padding:10px 10px;font-size:7px;}
+.word-chip:active:not(.used){transform:translate(2px,2px);box-shadow:1px 1px 0 #000;}
+.word-chip.used{opacity:.2;cursor:default;}
+.sentence-build{background:var(--dark);border:3px dashed var(--border);min-height:50px;padding:10px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-bottom:8px;}
+.placed-word{font-family:"Press Start 2P",monospace;background:var(--panel);border:2px solid var(--acc);color:var(--acc);padding:7px 9px;font-size:7px;cursor:pointer;}
+.ph-text{font-size:5px;color:var(--muted);}
+
+/* SPRINT */
+.sprint-counter{font-size:32px;color:var(--acc);text-align:center;margin-bottom:4px;}
+.sprint-label{font-size:5px;color:var(--muted);text-align:center;margin-bottom:12px;}
+.sprint-time{font-size:22px;color:var(--green);text-align:center;margin-bottom:12px;}
+.sprint-time.danger{color:var(--red);animation:blink2 .5s infinite;}
+
+/* BUTTONS */
+.px-btn{font-family:"Press Start 2P",monospace;background:var(--panel);border:3px solid var(--border);box-shadow:4px 4px 0 var(--dark);color:var(--white);cursor:pointer;padding:13px 14px;font-size:8px;line-height:1.6;width:100%;text-align:center;margin-top:6px;display:block;}
+.px-btn:active{transform:translate(4px,4px);box-shadow:0 0 0;}
+.px-btn.accent{background:var(--acc);color:var(--dark);border-color:#aa9900;}
+.px-btn.red{background:#330000;color:var(--red);border-color:var(--red);}
+.px-btn.small{font-size:6px;padding:10px 10px;}
+
+/* FEEDBACK */
+.fb-box{padding:11px;border:4px solid;margin-bottom:8px;font-size:7px;line-height:2;animation:fadeIn .15s;}
+.fb-box.correct{border-color:var(--green);background:#001a00;color:var(--green);}
+.fb-box.wrong{border-color:var(--red);background:#1a0000;color:var(--red);}
+.fb-main{font-size:10px;margin-bottom:5px;}
+.fb-sub{font-size:5px;color:var(--muted);}
+
+/* BANNER */
+.banner{text-align:center;padding:9px;font-size:7px;margin-bottom:8px;animation:fadeIn .2s;border:3px solid;}
+.banner.combo{background:var(--acc);color:var(--dark);border-color:#aa9900;box-shadow:4px 4px 0 #553300;}
+.banner.unlock{background:var(--blue);color:#fff;border-color:#2255aa;box-shadow:4px 4px 0 #001144;}
+.banner.achieve{background:#330033;color:var(--purple);border-color:var(--purple);box-shadow:4px 4px 0 #110011;}
+
+/* DAILY */
+.daily-box{background:var(--dark);border:3px solid var(--orange);box-shadow:4px 4px 0 #552200;padding:10px;margin-bottom:8px;}
+.daily-title{font-size:5px;color:var(--orange);margin-bottom:6px;letter-spacing:1px;}
+.daily-desc{font-size:7px;color:var(--white);margin-bottom:6px;line-height:1.8;}
+.daily-prog{background:var(--panel);border:2px solid var(--border);height:10px;margin-bottom:4px;}
+.daily-prog-fill{height:100%;background:var(--orange);transition:width .3s;}
+.daily-nums{font-size:5px;color:var(--muted);}
+.daily-done{color:var(--green);font-size:6px;}
+
+/* ACHIEVEMENTS */
+.achieve-grid{display:flex;flex-direction:column;gap:6px;}
+.achieve-item{background:var(--dark);border:2px solid var(--border);padding:10px;display:flex;align-items:center;gap:10px;}
+.achieve-item.unlocked{border-color:var(--purple);}
+.achieve-icon{font-size:18px;min-width:28px;text-align:center;}
+.achieve-info{flex:1;}
+.achieve-name{font-size:6px;color:var(--white);margin-bottom:4px;}
+.achieve-desc{font-size:5px;color:var(--muted);}
+.achieve-item.locked .achieve-icon{filter:grayscale(1);opacity:.3;}
+.achieve-item.locked .achieve-name{color:var(--muted);}
+
+/* CENTER */
+.center-state{text-align:center;padding:28px 10px;}
+.big-text{font-size:14px;margin-bottom:14px;}
+
+/* ANIMATIONS */
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-7px);}75%{transform:translateX(7px);}}
+.shake{animation:shake .35s;}
+</style>
+</head>
+<body>
+<div id="root">
+
+<div class="screen active" id="screen-start">
+  <div class="start-wrap">
+    <div class="start-logo">▶ IKASI EUSKARA</div>
+    <div class="start-sub">★ APRENDE EUSKERA ★ 20 NIVELES ★</div>
+    <div class="start-box">
+      <div class="start-label">NOMBRE DE JUGADOR:</div>
+      <input class="start-input" id="name-input" type="text" maxlength="12" placeholder="TU NOMBRE" autocomplete="off" autocorrect="off" autocapitalize="characters"/>
+      <div id="continue-area"></div>
+      <button class="px-btn accent" onclick="startGame(false)">▶ NUEVA PARTIDA</button>
+    </div>
+    <div class="press-start">PRESS START</div>
+  </div>
+</div>
+
+<div class="screen" id="screen-game">
+  <div class="hud-name" id="hud-name">JUGADOR</div>
+  <div class="hud">
+    <div class="hud-block"><div class="hud-label">LIVES</div><div class="hearts" id="h-hearts">♥♥♥</div></div>
+    <div class="hud-block"><div class="hud-label">SCORE</div><div class="hud-val" id="h-score">0</div></div>
+    <div class="hud-block"><div class="hud-label">STREAK</div><div class="hud-val" id="h-streak">0</div></div>
+    <div class="hud-block xp-wrap">
+      <div class="hud-label">XP <span id="h-xp">0</span>/<span id="h-xpnext">80</span></div>
+      <div class="xp-track"><div class="xp-fill" id="h-xpbar" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="save-ind" id="save-ind"></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="nav-play" onclick="showNav('play')">JUGAR</button>
+    <button class="nav-tab" id="nav-daily" onclick="showNav('daily')">RETO</button>
+    <button class="nav-tab" id="nav-achieve" onclick="showNav('achieve')">LOGROS</button>
+    <button class="nav-tab" id="nav-menu" onclick="showNav('menu')">MENU</button>
+  </div>
+  <div id="tab-play">
+    <div class="level-row" id="level-btns"></div>
+    <div class="tab-row" id="game-tabs"></div>
+    <div class="prog-track"><div class="prog-fill" id="prog-bar" style="width:0%"></div></div>
+    <div class="game-area" id="game-content"><div class="center-state">CARGANDO...</div></div>
+  </div>
+  <div id="tab-daily" style="display:none"><div class="game-area" id="daily-content"></div></div>
+  <div id="tab-achieve" style="display:none"><div class="game-area"><div class="achieve-grid" id="achieve-list"></div></div></div>
+  <div id="tab-menu" style="display:none">
+    <div class="game-area">
+      <div style="font-size:6px;color:var(--muted);margin-bottom:12px;letter-spacing:1px;">OPCIONES</div>
+      <button class="px-btn small" onclick="resetLives()">▶ REPONER VIDAS</button>
+      <button class="px-btn small" style="margin-top:8px" onclick="goToStart()">▶ CAMBIAR JUGADOR</button>
+      <button class="px-btn small red" style="margin-top:8px" onclick="confirmReset()">✗ BORRAR PARTIDA</button>
+      <div style="margin-top:20px;font-size:5px;color:var(--muted);line-height:2.2;text-align:center;">
+        IKASI EUSKARA v3.0<br>20 NIVELES · 6 MODOS · 10 LOGROS<br>317 PALABRAS · 90 FRASES<br>★ AUDIO: ANTTON (UPV/EHU) ★
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const AUDIO_BASE = 'https://irakias.github.io/euskera-audios/';
+let audioCache = {};
+
+function playAudio(filename) {
+  if (!filename) return;
+  const url = AUDIO_BASE + filename + '.wav';
+  if (audioCache[filename]) {
+    audioCache[filename].currentTime = 0;
+    audioCache[filename].play().catch(()=>{});
+    return;
+  }
+  const audio = new Audio(url);
+  audioCache[filename] = audio;
+  audio.play().catch(()=>{});
+}
+
+// Fallback TTS si el audio falla
+function speakFallback(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const voices = window.speechSynthesis.getVoices();
+  const eu = voices.find(v => v.lang && v.lang.startsWith('eu'));
+  const es = voices.find(v => v.lang && v.lang.startsWith('es'));
+  u.voice = eu || es || null;
+  u.lang = eu ? 'eu-ES' : 'es-ES';
+  u.rate = 0.85;
+  window.speechSynthesis.speak(u);
+}
+
+function speak(filename, text) {
+  if (filename) {
+    const url = AUDIO_BASE + filename + '.wav';
+    const audio = new Audio(url);
+    audio.onerror = () => speakFallback(text);
+    audio.play().catch(() => speakFallback(text));
+  } else {
+    speakFallback(text);
+  }
+}
+
+// ── AUDIO ENGINE (8-bit SFX) ──
+let AC = null;
+function getAC(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}return AC;}
+function beep(freq,dur,type,vol,delay){
+  type=type||'square';vol=vol||0.15;delay=delay||0;
+  const ac=getAC();if(!ac)return;
+  try{const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);
+  o.type=type;o.frequency.setValueAtTime(freq,ac.currentTime+delay);
+  g.gain.setValueAtTime(vol,ac.currentTime+delay);
+  g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+delay+dur);
+  o.start(ac.currentTime+delay);o.stop(ac.currentTime+delay+dur+0.05);}catch(e){}}
+function sfxCorrect(){beep(523,.07);beep(659,.07,null,null,.08);beep(784,.14,null,null,.16);}
+function sfxWrong(){beep(200,.06,'sawtooth',.2);beep(140,.14,'sawtooth',.2,.07);}
+function sfxCombo(){[523,659,784,1047].forEach((f,i)=>beep(f,.1,'square',.18,i*.1));}
+function sfxUnlock(){[330,392,494,587,698,784].forEach((f,i)=>beep(f,.1,'square',.15,i*.11));}
+function sfxGameover(){[300,250,200,150].forEach((f,i)=>beep(f,.18,'sawtooth',.22,i*.2));}
+function sfxTimer(){beep(880,.05,'square',.09);}
+function sfxAchieve(){[784,988,1175].forEach((f,i)=>beep(f,.12,'square',.2,i*.13));}
+function sfxStart(){[262,330,392,523].forEach((f,i)=>beep(f,.13,'square',.2,i*.13));}
+
+function speakBtn(filename, text) {
+  return `<button class="q-speak" onclick="speak('${esc(filename)}','${esc(text)}')" title="Escuchar">🔊</button>`;
+}
+
+// ── DATA ──
+const LEVELS = [
+  {id:1,label:'LVL 1',name:'OINARRIA',xpNeeded:0},
+  {id:2,label:'LVL 2',name:'FAMILIA',xpNeeded:80},
+  {id:3,label:'LVL 3',name:'ZENBAK.',xpNeeded:200},
+  {id:4,label:'LVL 4',name:'ADITZAK',xpNeeded:380},
+  {id:5,label:'LVL 5',name:'ESALDIAK',xpNeeded:600},
+  {id:6,label:'LVL 6',name:'JATETXEA',xpNeeded:900},
+  {id:7,label:'LVL 7',name:'GARRAIOA',xpNeeded:1200},
+  {id:8,label:'LVL 8',name:'LANA',xpNeeded:1600},
+  {id:9,label:'LVL 9',name:'DENBORA',xpNeeded:2100},
+  {id:10,label:'LVL 10',name:'ETXEA',xpNeeded:2700},
+  {id:11,label:'LVL 11',name:'GORPUTZA',xpNeeded:3400},
+  {id:12,label:'LVL 12',name:'HIRIA',xpNeeded:4200},
+  {id:13,label:'LVL 13',name:'EGURALDIA',xpNeeded:5100},
+  {id:14,label:'LVL 14',name:'EROSKETAK',xpNeeded:6100},
+  {id:15,label:'LVL 15',name:'IZENORD.',xpNeeded:7200},
+  {id:16,label:'LVL 16',name:'GALDERAK',xpNeeded:8400},
+  {id:17,label:'LVL 17',name:'ORAINA',xpNeeded:9700},
+  {id:18,label:'LVL 18',name:'IRAGANA',xpNeeded:11100},
+  {id:19,label:'LVL 19',name:'ADJEKT.',xpNeeded:12600},
+  {id:20,label:'LVL 20',name:'ESAERAK',xpNeeded:14200},
+];
+
+const GAME_TYPES = [
+  {id:'translate',label:'TRADUCIR'},{id:'match',label:'EMPAREJAR'},
+  {id:'fill',label:'ESCRIBIR'},{id:'build',label:'CONSTRUIR'},
+  {id:'sprint',label:'SPRINT'},{id:'entzun',label:'ENTZUN'},
+];
+
+const C = {
+  1:{pairs:[
+    {eu:'Kaixo',es:'Hola',h:'SALUDO INFORMAL',a:'lvl1_kaixo'},
+    {eu:'Egun on',es:'Buenos días',h:'SALUDO MAÑANA',a:'lvl1_egun_on'},
+    {eu:'Arratsalde on',es:'Buenas tardes',h:'SALUDO TARDE',a:'lvl1_arratsalde_on'},
+    {eu:'Gabon',es:'Buenas noches',h:'SALUDO NOCHE',a:'lvl1_gabon'},
+    {eu:'Agur',es:'Adiós',h:'DESPEDIDA',a:'lvl1_agur'},
+    {eu:'Eskerrik asko',es:'Muchas gracias',h:'AGRADECIMIENTO',a:'lvl1_eskerrik_asko'},
+    {eu:'Bai',es:'Sí',h:'AFIRMACION',a:'lvl1_bai'},
+    {eu:'Ez',es:'No',h:'NEGACION',a:'lvl1_ez'},
+    {eu:'Mesedez',es:'Por favor',h:'CORTESIA',a:'lvl1_mesedez'},
+    {eu:'Barkatu',es:'Perdona',h:'DISCULPA',a:'lvl1_barkatu'},
+    {eu:'Zer moduz?',es:'¿Cómo estás?',h:'PREGUNTA SALUDO',a:'lvl1_zer_moduz'},
+    {eu:'Ondo',es:'Bien',h:'ESTADO +',a:'lvl1_ondo'},
+    {eu:'Txarto',es:'Mal',h:'ESTADO -',a:'lvl1_txarto'},
+    {eu:'Nire izena da',es:'Mi nombre es',h:'PRESENTACION',a:'lvl1_nire_izena_da'},
+    {eu:'Pozik nago',es:'Estoy contento/a',h:'ESTADO ANIMO',a:'lvl1_pozik_nago'},
+    {eu:'Ongi etorri',es:'Bienvenido/a',h:'BIENVENIDA',a:'lvl1_ongi_etorri'},
+    {eu:'Gero arte',es:'Hasta luego',h:'DESPEDIDA INFORMAL',a:'lvl1_gero_arte'},
+  ],sentences:[
+    {eu:['Kaixo','zer','moduz'],es:'Hola ¿cómo estás?',a:'lvl1_frase1'},
+    {eu:['Egun','on','eskerrik','asko'],es:'Buenos días, muchas gracias',a:'lvl1_frase2'},
+    {eu:['Agur','eta','ongi','ibili'],es:'Adiós y que te vaya bien',a:'lvl1_frase3'},
+    {eu:['Nire','izena','Jon','da'],es:'Mi nombre es Jon',a:'lvl1_frase4'},
+    {eu:['Bai','ondo','nago'],es:'Sí, estoy bien',a:'lvl1_frase5'},
+  ]},
+  2:{pairs:[
+    {eu:'Aita',es:'Padre',h:'FAMILIAR MASC.',a:'lvl2_aita'},
+    {eu:'Ama',es:'Madre',h:'FAMILIAR FEM.',a:'lvl2_ama'},
+    {eu:'Anaia',es:'Hermano',h:'HERMANO',a:'lvl2_anaia'},
+    {eu:'Arreba',es:'Hermana',h:'HERMANA',a:'lvl2_arreba'},
+    {eu:'Osaba',es:'Tío',h:'FAMILIAR',a:'lvl2_osaba'},
+    {eu:'Izeba',es:'Tía',h:'FAMILIAR',a:'lvl2_izeba'},
+    {eu:'Alaba',es:'Hija',h:'DESCENDIENTE F.',a:'lvl2_alaba'},
+    {eu:'Semea',es:'Hijo',h:'DESCENDIENTE M.',a:'lvl2_semea'},
+    {eu:'Aitona',es:'Abuelo',h:'ASCENDIENTE M.',a:'lvl2_aitona'},
+    {eu:'Amona',es:'Abuela',h:'ASCENDIENTE F.',a:'lvl2_amona'},
+    {eu:'Laguna',es:'Amigo/a',h:'AMISTAD',a:'lvl2_laguna'},
+    {eu:'Senarra',es:'Marido',h:'PAREJA M.',a:'lvl2_senarra'},
+    {eu:'Emaztea',es:'Esposa',h:'PAREJA F.',a:'lvl2_emaztea'},
+    {eu:'Haurra',es:'Niño/a',h:'MENOR',a:'lvl2_haurra'},
+    {eu:'Neska',es:'Chica',h:'FEM.',a:'lvl2_neska'},
+    {eu:'Mutila',es:'Chico',h:'MASC.',a:'lvl2_mutila'},
+  ],sentences:[
+    {eu:['Nire','aita','ondo','dago'],es:'Mi padre está bien',a:'lvl2_frase1'},
+    {eu:['Nire','anaia','Bilbon','bizi','da'],es:'Mi hermano vive en Bilbao',a:'lvl2_frase2'},
+    {eu:['Nire','amona','zaharra','da'],es:'Mi abuela es mayor',a:'lvl2_frase3'},
+    {eu:['Bi','arreba','ditut'],es:'Tengo dos hermanas',a:'lvl2_frase4'},
+  ]},
+  3:{pairs:[
+    {eu:'Bat',es:'Uno',h:'NUMERO',a:'lvl3_bat'},{eu:'Bi',es:'Dos',h:'NUMERO',a:'lvl3_bi'},
+    {eu:'Hiru',es:'Tres',h:'NUMERO',a:'lvl3_hiru'},{eu:'Lau',es:'Cuatro',h:'NUMERO',a:'lvl3_lau'},
+    {eu:'Bost',es:'Cinco',h:'NUMERO',a:'lvl3_bost'},{eu:'Sei',es:'Seis',h:'NUMERO',a:'lvl3_sei'},
+    {eu:'Zazpi',es:'Siete',h:'NUMERO',a:'lvl3_zazpi'},{eu:'Zortzi',es:'Ocho',h:'NUMERO',a:'lvl3_zortzi'},
+    {eu:'Bederatzi',es:'Nueve',h:'NUMERO',a:'lvl3_bederatzi'},{eu:'Hamar',es:'Diez',h:'NUMERO',a:'lvl3_hamar'},
+    {eu:'Gorria',es:'Rojo',h:'COLOR',a:'lvl3_gorria'},{eu:'Urdina',es:'Azul',h:'COLOR',a:'lvl3_urdina'},
+    {eu:'Berdea',es:'Verde',h:'COLOR',a:'lvl3_berdea'},{eu:'Zuria',es:'Blanco',h:'COLOR',a:'lvl3_zuria'},
+    {eu:'Beltza',es:'Negro',h:'COLOR',a:'lvl3_beltza'},{eu:'Horia',es:'Amarillo',h:'COLOR',a:'lvl3_horia'},
+    {eu:'Laranja',es:'Naranja',h:'COLOR',a:'lvl3_laranja'},{eu:'Arrosa',es:'Rosa',h:'COLOR',a:'lvl3_arrosa'},
+  ],sentences:[
+    {eu:['Bost','lagun','hemen','daude'],es:'Cinco amigos están aquí',a:'lvl3_frase1'},
+    {eu:['Hiru','eta','lau','zazpi','dira'],es:'Tres y cuatro son siete',a:'lvl3_frase2'},
+    {eu:['Urdina','nire','kolore','gogokoa','da'],es:'El azul es mi color favorito',a:'lvl3_frase3'},
+    {eu:['Hamar','eta','bat','hamaika','dira'],es:'Diez y uno son once',a:'lvl3_frase4'},
+  ]},
+  4:{pairs:[
+    {eu:'Joan',es:'Ir',h:'MOVIMIENTO',a:'lvl4_joan'},{eu:'Etorri',es:'Venir',h:'MOVIMIENTO',a:'lvl4_etorri'},
+    {eu:'Jan',es:'Comer',h:'ACCION',a:'lvl4_jan'},{eu:'Edan',es:'Beber',h:'ACCION',a:'lvl4_edan'},
+    {eu:'Ikusi',es:'Ver',h:'SENTIDO',a:'lvl4_ikusi'},{eu:'Entzun',es:'Escuchar',h:'SENTIDO',a:'lvl4_entzun'},
+    {eu:'Hitz egin',es:'Hablar',h:'COMUNICACION',a:'lvl4_hitz_egin'},{eu:'Idatzi',es:'Escribir',h:'ACCION',a:'lvl4_idatzi'},
+    {eu:'Irakurri',es:'Leer',h:'ACCION',a:'lvl4_irakurri'},{eu:'Lo egin',es:'Dormir',h:'ESTADO',a:'lvl4_lo_egin'},
+    {eu:'Lan egin',es:'Trabajar',h:'ACCION',a:'lvl4_lan_egin'},{eu:'Ikasi',es:'Aprender',h:'APRENDIZAJE',a:'lvl4_ikasi'},
+    {eu:'Erosi',es:'Comprar',h:'ACCION',a:'lvl4_erosi'},{eu:'Saldu',es:'Vender',h:'ACCION',a:'lvl4_saldu'},
+    {eu:'Ibili',es:'Caminar',h:'MOVIMIENTO',a:'lvl4_ibili'},{eu:'Itzuli',es:'Volver',h:'MOVIMIENTO',a:'lvl4_itzuli'},
+  ],sentences:[
+    {eu:['Ni','etxera','joaten','naiz'],es:'Yo voy a casa',a:'lvl4_frase1'},
+    {eu:['Nik','euskara','ikasi','nahi','dut'],es:'Yo quiero aprender euskera',a:'lvl4_frase2'},
+    {eu:['Gaur','lan','egin','behar','dut'],es:'Hoy tengo que trabajar',a:'lvl4_frase3'},
+    {eu:['Liburua','irakurtzen','dut'],es:'Leo el libro',a:'lvl4_frase4'},
+    {eu:['Ura','edan','nahi','dut'],es:'Quiero beber agua',a:'lvl4_frase5'},
+  ]},
+  5:{pairs:[
+    {eu:'Non bizi zara?',es:'¿Dónde vives?',h:'PREGUNTA',a:'lvl5_non_bizi_zara'},
+    {eu:'Etxean',es:'En casa',h:'LUGAR',a:'lvl5_etxean'},
+    {eu:'Dendara joan nahi dut',es:'Quiero ir a la tienda',h:'DESEO',a:'lvl5_dendara_joan'},
+    {eu:'Gosea naiz',es:'Tengo hambre',h:'ESTADO',a:'lvl5_gosea_naiz'},
+    {eu:'Egarria naiz',es:'Tengo sed',h:'ESTADO',a:'lvl5_egarria_naiz'},
+    {eu:'Nekatuta nago',es:'Estoy cansado/a',h:'ESTADO',a:'lvl5_nekatuta_nago'},
+    {eu:'Lagundu al diezadakezu?',es:'¿Puedes ayudarme?',h:'PETICION',a:'lvl5_lagundu'},
+    {eu:'Ez dakit',es:'No sé',h:'EXPRESION',a:'lvl5_ez_dakit'},
+    {eu:'Ulertu dut',es:'Lo he entendido',h:'COMPRENSION',a:'lvl5_ulertu_dut'},
+    {eu:'Polita da',es:'Es bonito/a',h:'OPINION',a:'lvl5_polita_da'},
+    {eu:'Ados',es:'De acuerdo',h:'ACUERDO',a:'lvl5_ados'},
+    {eu:'Ez dut ulertzen',es:'No lo entiendo',h:'COMPRENSION -',a:'lvl5_ez_dut_ulertzen'},
+    {eu:'Nora zoaz?',es:'¿Adónde vas?',h:'PREGUNTA',a:'lvl5_nora_zoaz'},
+    {eu:'Noiz etorriko zara?',es:'¿Cuándo vendrás?',h:'PREGUNTA',a:'lvl5_noiz_etorriko'},
+    {eu:'Zer nahi duzu?',es:'¿Qué quieres?',h:'PREGUNTA',a:'lvl5_zer_nahi_duzu'},
+    {eu:'Gaur eguraldi ona dago',es:'Hoy hace buen tiempo',h:'TIEMPO',a:'lvl5_eguraldi_ona'},
+  ],sentences:[
+    {eu:['Gosea','naiz','jan','nahi','dut'],es:'Tengo hambre, quiero comer',a:'lvl5_frase1'},
+    {eu:['Ez','dakit','non','dagoen'],es:'No sé dónde está',a:'lvl5_frase2'},
+    {eu:['Bihar','etxera','itzuliko','naiz'],es:'Mañana volveré a casa',a:'lvl5_frase3'},
+    {eu:['Lagundu','al','diezadakezu','mesedez'],es:'¿Puedes ayudarme, por favor?',a:'lvl5_frase4'},
+    {eu:['Gaur','eguraldi','ona','dago'],es:'Hoy hace buen tiempo',a:'lvl5_frase5'},
+  ]},
+  6:{pairs:[
+    {eu:'Jatetxea',es:'Restaurante',h:'LUGAR',a:'lvl6_jatetxea'},
+    {eu:'Mahaia',es:'Mesa',h:'MOBILIARIO',a:'lvl6_mahaia'},
+    {eu:'Aulkia',es:'Silla',h:'MOBILIARIO',a:'lvl6_aulkia'},
+    {eu:'Menukarla',es:'La carta',h:'DOCUMENTO',a:'lvl6_menukarla'},
+    {eu:'Zerbitzaria',es:'Camarero/a',h:'PROFESION',a:'lvl6_zerbitzaria'},
+    {eu:'Ura',es:'Agua',h:'BEBIDA',a:'lvl6_ura'},
+    {eu:'Ardoa',es:'Vino',h:'BEBIDA',a:'lvl6_ardoa'},
+    {eu:'Garagardoa',es:'Cerveza',h:'BEBIDA',a:'lvl6_garagardoa'},
+    {eu:'Ogia',es:'Pan',h:'ALIMENTO',a:'lvl6_ogia'},
+    {eu:'Haragia',es:'Carne',h:'ALIMENTO',a:'lvl6_haragia'},
+    {eu:'Arraina',es:'Pescado',h:'ALIMENTO',a:'lvl6_arraina'},
+    {eu:'Kontua mesedez',es:'La cuenta, por favor',h:'PETICION',a:'lvl6_kontua_mesedez'},
+    {eu:'Goxoa da',es:'Está rico/a',h:'OPINION',a:'lvl6_goxoa_da'},
+    {eu:'Zerbitzu ona',es:'Buen servicio',h:'OPINION',a:'lvl6_zerbitzu_ona'},
+  ],sentences:[
+    {eu:['Mahaia','bat','nahi','nuke'],es:'Quisiera una mesa',a:'lvl6_frase1'},
+    {eu:['Menukarla','ekar','diezadakezu'],es:'¿Puede traerme la carta?',a:'lvl6_frase2'},
+    {eu:['Kontua','mesedez','eskerrik','asko'],es:'La cuenta por favor, gracias',a:'lvl6_frase3'},
+    {eu:['Ardoa','eta','ura','nahi','ditut'],es:'Quiero vino y agua',a:'lvl6_frase4'},
+  ]},
+  7:{pairs:[
+    {eu:'Autobusa',es:'Autobús',h:'TRANSPORTE',a:'lvl7_autobusa'},
+    {eu:'Trena',es:'Tren',h:'TRANSPORTE',a:'lvl7_trena'},
+    {eu:'Metroa',es:'Metro',h:'TRANSPORTE',a:'lvl7_metroa'},
+    {eu:'Taxia',es:'Taxi',h:'TRANSPORTE',a:'lvl7_taxia'},
+    {eu:'Geltokia',es:'Estación',h:'LUGAR',a:'lvl7_geltokia'},
+    {eu:'Geldiunea',es:'Parada',h:'LUGAR',a:'lvl7_geldiunea'},
+    {eu:'Txartela',es:'Billete',h:'DOCUMENTO',a:'lvl7_txartela'},
+    {eu:'Sarrera',es:'Entrada',h:'ACCESO',a:'lvl7_sarrera'},
+    {eu:'Irteera',es:'Salida',h:'SALIDA',a:'lvl7_irteera'},
+    {eu:'Nora doa autobusa?',es:'¿Adónde va el autobús?',h:'PREGUNTA',a:'lvl7_nora_doa'},
+    {eu:'Zenbat kostatzen da?',es:'¿Cuánto cuesta?',h:'PRECIO',a:'lvl7_zenbat_kostatzen'},
+    {eu:'Noiz irteten da?',es:'¿Cuándo sale?',h:'HORARIO',a:'lvl7_noiz_irteten'},
+    {eu:'Berandu da',es:'Es tarde',h:'TIEMPO',a:'lvl7_berandu_da'},
+    {eu:'Goiz da',es:'Es pronto',h:'TIEMPO',a:'lvl7_goiz_da'},
+  ],sentences:[
+    {eu:['Geltokia','non','dago'],es:'¿Dónde está la estación?',a:'lvl7_frase1'},
+    {eu:['Txartela','bat','erosi','nahi','dut'],es:'Quiero comprar un billete',a:'lvl7_frase2'},
+    {eu:['Autobusa','noiz','irteten','da'],es:'¿Cuándo sale el autobús?',a:'lvl7_frase3'},
+    {eu:['Irteera','non','dago','mesedez'],es:'¿Dónde está la salida, por favor?',a:'lvl7_frase4'},
+  ]},
+  8:{pairs:[
+    {eu:'Lana',es:'Trabajo',h:'PROFESION',a:'lvl8_lana'},
+    {eu:'Bulegoa',es:'Oficina',h:'LUGAR',a:'lvl8_bulegoa'},
+    {eu:'Bilera',es:'Reunión',h:'EVENTO',a:'lvl8_bilera'},
+    {eu:'Nagusia',es:'Jefe/a',h:'JERARQUIA',a:'lvl8_nagusia'},
+    {eu:'Lankidea',es:'Compañero/a',h:'RELACION',a:'lvl8_lankidea'},
+    {eu:'Soldata',es:'Salario',h:'ECONOMIA',a:'lvl8_soldata'},
+    {eu:'Txostena',es:'Informe',h:'DOCUMENTO',a:'lvl8_txostena'},
+    {eu:'Ingeniari',es:'Ingeniero/a',h:'PROFESION',a:'lvl8_ingeniari'},
+    {eu:'Programatzaile',es:'Programador/a',h:'PROFESION',a:'lvl8_programatzaile'},
+    {eu:'Enpresa',es:'Empresa',h:'ORGANIZACION',a:'lvl8_enpresa'},
+    {eu:'Proiektua',es:'Proyecto',h:'TRABAJO',a:'lvl8_proiektua'},
+    {eu:'Epea',es:'Plazo / Fecha límite',h:'TIEMPO',a:'lvl8_epea'},
+    {eu:'Non lan egiten duzu?',es:'¿Dónde trabajas?',h:'PREGUNTA',a:'lvl8_non_lan_egiten'},
+    {eu:'Zer egiten duzu?',es:'¿Qué haces?',h:'PREGUNTA',a:'lvl8_zer_egiten_duzu'},
+  ],sentences:[
+    {eu:['Nik','bulegoan','lan','egiten','dut'],es:'Yo trabajo en una oficina',a:'lvl8_frase1'},
+    {eu:['Bilera','bat','daukagu','gaur'],es:'Hoy tenemos una reunión',a:'lvl8_frase2'},
+    {eu:['Proiektua','prest','dago'],es:'El proyecto está listo',a:'lvl8_frase3'},
+    {eu:['Non','lan','egiten','duzu'],es:'¿Dónde trabajas?',a:'lvl8_frase4'},
+  ]},
+  9:{pairs:[
+    {eu:'Gaur',es:'Hoy',h:'TIEMPO',a:'lvl9_gaur'},{eu:'Bihar',es:'Mañana',h:'TIEMPO',a:'lvl9_bihar'},
+    {eu:'Atzo',es:'Ayer',h:'TIEMPO',a:'lvl9_atzo'},{eu:'Orain',es:'Ahora',h:'TIEMPO',a:'lvl9_orain'},
+    {eu:'Gero',es:'Después',h:'TIEMPO',a:'lvl9_gero'},{eu:'Lehen',es:'Antes',h:'TIEMPO',a:'lvl9_lehen'},
+    {eu:'Astelehena',es:'Lunes',h:'DIA SEMANA',a:'lvl9_astelehena'},
+    {eu:'Asteartea',es:'Martes',h:'DIA SEMANA',a:'lvl9_asteartea'},
+    {eu:'Asteazkena',es:'Miércoles',h:'DIA SEMANA',a:'lvl9_asteazkena'},
+    {eu:'Osteguna',es:'Jueves',h:'DIA SEMANA',a:'lvl9_osteguna'},
+    {eu:'Ostirala',es:'Viernes',h:'DIA SEMANA',a:'lvl9_ostirala'},
+    {eu:'Larunbata',es:'Sábado',h:'DIA SEMANA',a:'lvl9_larunbata'},
+    {eu:'Igandea',es:'Domingo',h:'DIA SEMANA',a:'lvl9_igandea'},
+    {eu:'Urtea',es:'Año',h:'CALENDARIO',a:'lvl9_urtea'},
+    {eu:'Hilabetea',es:'Mes',h:'CALENDARIO',a:'lvl9_hilabetea'},
+    {eu:'Astea',es:'Semana',h:'CALENDARIO',a:'lvl9_astea'},
+  ],sentences:[
+    {eu:['Gaur','astelehena','da'],es:'Hoy es lunes',a:'lvl9_frase1'},
+    {eu:['Bihar','larunbata','izango','da'],es:'Mañana será sábado',a:'lvl9_frase2'},
+    {eu:['Atzo','igandea','zen'],es:'Ayer fue domingo',a:'lvl9_frase3'},
+    {eu:['Orain','goizeko','hamar','eta','erdi','dira'],es:'Ahora son las diez y media',a:'lvl9_frase4'},
+  ]},
+  10:{pairs:[
+    {eu:'Etxea',es:'Casa',h:'LUGAR',a:'lvl10_etxea'},{eu:'Gela',es:'Habitación',h:'ESTANCIA',a:'lvl10_gela'},
+    {eu:'Sukaldea',es:'Cocina',h:'ESTANCIA',a:'lvl10_sukaldea'},{eu:'Egongela',es:'Salón',h:'ESTANCIA',a:'lvl10_egongela'},
+    {eu:'Logela',es:'Dormitorio',h:'ESTANCIA',a:'lvl10_logela'},{eu:'Komunak',es:'Baño',h:'ESTANCIA',a:'lvl10_komunak'},
+    {eu:'Leihoa',es:'Ventana',h:'ELEMENTO',a:'lvl10_leihoa'},{eu:'Atea',es:'Puerta',h:'ELEMENTO',a:'lvl10_atea'},
+    {eu:'Mahai',es:'Mesa',h:'MUEBLE',a:'lvl10_mahai'},{eu:'Aulki',es:'Silla',h:'MUEBLE',a:'lvl10_aulki'},
+    {eu:'Ohe',es:'Cama',h:'MUEBLE',a:'lvl10_ohe'},{eu:'Sofa',es:'Sofá',h:'MUEBLE',a:'lvl10_sofa'},
+    {eu:'Argia',es:'Luz',h:'ELEMENTO',a:'lvl10_argia'},{eu:'Beroa',es:'Calor',h:'ESTADO',a:'lvl10_beroa'},
+    {eu:'Hotza',es:'Frío',h:'ESTADO',a:'lvl10_hotza'},{eu:'Garbitu',es:'Limpiar',h:'ACCION',a:'lvl10_garbitu'},
+  ],sentences:[
+    {eu:['Nire','logela','handia','da'],es:'Mi dormitorio es grande',a:'lvl10_frase1'},
+    {eu:['Sukaldean','otordua','prestatzen','dut'],es:'Preparo la comida en la cocina',a:'lvl10_frase2'},
+    {eu:['Leihoa','itxi','mesedez'],es:'Cierra la ventana, por favor',a:'lvl10_frase3'},
+    {eu:['Etxea','garbitu','behar','dut'],es:'Tengo que limpiar la casa',a:'lvl10_frase4'},
+  ]},
+  11:{pairs:[
+    {eu:'Burua',es:'Cabeza',h:'CUERPO',a:'lvl11_burua'},{eu:'Begiak',es:'Ojos',h:'CUERPO',a:'lvl11_begiak'},
+    {eu:'Sudurra',es:'Nariz',h:'CUERPO',a:'lvl11_sudurra'},{eu:'Ahoa',es:'Boca',h:'CUERPO',a:'lvl11_ahoa'},
+    {eu:'Belarriak',es:'Orejas',h:'CUERPO',a:'lvl11_belarriak'},{eu:'Eskuak',es:'Manos',h:'CUERPO',a:'lvl11_eskuak'},
+    {eu:'Hankak',es:'Piernas/Pies',h:'CUERPO',a:'lvl11_hankak'},{eu:'Bihotza',es:'Corazón',h:'CUERPO',a:'lvl11_bihotza'},
+    {eu:'Urdaila',es:'Estómago',h:'CUERPO',a:'lvl11_urdaila'},{eu:'Mina dut',es:'Me duele',h:'SALUD',a:'lvl11_mina_dut'},
+    {eu:'Gaixo nago',es:'Estoy enfermo/a',h:'SALUD',a:'lvl11_gaixo_nago'},
+    {eu:'Medikua',es:'Médico/a',h:'PROFESION',a:'lvl11_medikua'},
+    {eu:'Ospitalea',es:'Hospital',h:'LUGAR',a:'lvl11_ospitalea'},
+    {eu:'Botikak',es:'Medicamentos',h:'SALUD',a:'lvl11_botikak'},
+    {eu:'Sukarra daukat',es:'Tengo fiebre',h:'SALUD',a:'lvl11_sukarra'},
+    {eu:'Eztula daukat',es:'Tengo tos',h:'SALUD',a:'lvl11_eztula'},
+    {eu:'Hobeto nago',es:'Estoy mejor',h:'SALUD',a:'lvl11_hobeto'},
+  ],sentences:[
+    {eu:['Burua','min','dut'],es:'Me duele la cabeza',a:'lvl11_frase1'},
+    {eu:['Medikuarengana','joan','behar','dut'],es:'Tengo que ir al médico',a:'lvl11_frase2'},
+    {eu:['Gaixo','nago','eta','etxean','egongo','naiz'],es:'Estoy enfermo y me quedaré en casa',a:'lvl11_frase3'},
+    {eu:['Sukarra','daukat','eta','hotza','sentitzen','dut'],es:'Tengo fiebre y siento frío',a:'lvl11_frase4'},
+    {eu:['Botikak','hartu','eta','hobeto','nago'],es:'He tomado los medicamentos y estoy mejor',a:'lvl11_frase5'},
+  ]},
+  12:{pairs:[
+    {eu:'Hiria',es:'Ciudad',h:'LUGAR',a:'lvl12_hiria'},{eu:'Kalea',es:'Calle',h:'LUGAR',a:'lvl12_kalea'},
+    {eu:'Plaza',es:'Plaza',h:'LUGAR',a:'lvl12_plaza'},{eu:'Parkea',es:'Parque',h:'LUGAR',a:'lvl12_parkea'},
+    {eu:'Denda',es:'Tienda',h:'COMERCIAL',a:'lvl12_denda'},{eu:'Merkatu',es:'Mercado',h:'COMERCIAL',a:'lvl12_merkatu'},
+    {eu:'Banku',es:'Banco',h:'SERVICIO',a:'lvl12_banku'},{eu:'Posta-bulegoa',es:'Correos',h:'SERVICIO',a:'lvl12_posta'},
+    {eu:'Liburutegia',es:'Biblioteca',h:'CULTURAL',a:'lvl12_liburutegia'},
+    {eu:'Museoa',es:'Museo',h:'CULTURAL',a:'lvl12_museoa'},
+    {eu:'Eliza',es:'Iglesia',h:'LUGAR',a:'lvl12_eliza'},{eu:'Eskola',es:'Escuela',h:'EDUCACION',a:'lvl12_eskola'},
+    {eu:'Unibertsitatea',es:'Universidad',h:'EDUCACION',a:'lvl12_unibertsitatea'},
+    {eu:'Zinema',es:'Cine',h:'OCIO',a:'lvl12_zinema'},{eu:'Antzokia',es:'Teatro',h:'OCIO',a:'lvl12_antzokia'},
+    {eu:'Non dago...?',es:'¿Dónde está...?',h:'PREGUNTA',a:'lvl12_non_dago'},
+  ],sentences:[
+    {eu:['Liburutegia','non','dago'],es:'¿Dónde está la biblioteca?',a:'lvl12_frase1'},
+    {eu:['Parkea','gertu','dago'],es:'El parque está cerca',a:'lvl12_frase2'},
+    {eu:['Museoa','ikustera','joan','nahi','dut'],es:'Quiero ir a ver el museo',a:'lvl12_frase3'},
+    {eu:['Kalean','jendea','dago'],es:'Hay gente en la calle',a:'lvl12_frase4'},
+  ]},
+  13:{pairs:[
+    {eu:'Eguzkia',es:'Sol',h:'NATURALEZA',a:'lvl13_eguzkia'},{eu:'Euria',es:'Lluvia',h:'NATURALEZA',a:'lvl13_euria'},
+    {eu:'Elurra',es:'Nieve',h:'NATURALEZA',a:'lvl13_elurra'},{eu:'Haizea',es:'Viento',h:'NATURALEZA',a:'lvl13_haizea'},
+    {eu:'Hodeia',es:'Nube',h:'NATURALEZA',a:'lvl13_hodeia'},{eu:'Trumoia',es:'Trueno',h:'NATURALEZA',a:'lvl13_trumoia'},
+    {eu:'Mendi',es:'Montaña',h:'GEOGRAFIA',a:'lvl13_mendi'},{eu:'Ibaia',es:'Río',h:'GEOGRAFIA',a:'lvl13_ibaia'},
+    {eu:'Itsasoa',es:'Mar',h:'GEOGRAFIA',a:'lvl13_itsasoa'},{eu:'Basoa',es:'Bosque',h:'NATURALEZA',a:'lvl13_basoa'},
+    {eu:'Eguraldi ona dago',es:'Hace buen tiempo',h:'TIEMPO ATMOSF.',a:'lvl13_eguraldi_ona'},
+    {eu:'Euria egiten du',es:'Está lloviendo',h:'TIEMPO ATMOSF.',a:'lvl13_euria_egiten'},
+    {eu:'Hotza dago',es:'Hace frío',h:'TIEMPO ATMOSF.',a:'lvl13_hotza_dago'},
+    {eu:'Beroa dago',es:'Hace calor',h:'TIEMPO ATMOSF.',a:'lvl13_beroa_dago'},
+    {eu:'Lainoa dago',es:'Hay niebla',h:'TIEMPO ATMOSF.',a:'lvl13_lainoa'},
+  ],sentences:[
+    {eu:['Gaur','euria','egiten','du'],es:'Hoy está lloviendo',a:'lvl13_frase1'},
+    {eu:['Udaberrian','eguzkia','ateratzen','da'],es:'En primavera sale el sol',a:'lvl13_frase2'},
+    {eu:['Mendira','joango','gara','bihar'],es:'Iremos a la montaña mañana',a:'lvl13_frase3'},
+    {eu:['Itsasoa','urdin','eta','handia','da'],es:'El mar es azul y grande',a:'lvl13_frase4'},
+  ]},
+  14:{pairs:[
+    {eu:'Dirua',es:'Dinero',h:'ECONOMIA',a:'lvl14_dirua'},{eu:'Prezioa',es:'Precio',h:'ECONOMIA',a:'lvl14_prezioa'},
+    {eu:'Merke',es:'Barato',h:'ECONOMIA',a:'lvl14_merke'},{eu:'Garestia',es:'Caro',h:'ECONOMIA',a:'lvl14_garestia'},
+    {eu:'Txanpona',es:'Moneda',h:'ECONOMIA',a:'lvl14_txanpona'},{eu:'Billetea',es:'Billete (dinero)',h:'ECONOMIA',a:'lvl14_billetea'},
+    {eu:'Txartela',es:'Tarjeta (pago)',h:'ECONOMIA',a:'lvl14_txartela'},
+    {eu:'Kobrantza',es:'Cobro/Pago',h:'ECONOMIA',a:'lvl14_kobrantza'},
+    {eu:'Deskontua',es:'Descuento',h:'ECONOMIA',a:'lvl14_deskontua'},
+    {eu:'Zenbat balio du?',es:'¿Cuánto vale?',h:'PREGUNTA',a:'lvl14_zenbat_balio'},
+    {eu:'Erosi nahi dut',es:'Quiero comprar',h:'ACCION',a:'lvl14_erosi_nahi'},
+    {eu:'Saltzen al duzu?',es:'¿Vende usted?',h:'PREGUNTA',a:'lvl14_saltzen'},
+    {eu:'Tamaina',es:'Talla/Tamaño',h:'DESCRIPCION',a:'lvl14_tamaina'},
+    {eu:'Handia',es:'Grande',h:'DESCRIPCION',a:'lvl14_handia'},
+    {eu:'Txikia',es:'Pequeño/a',h:'DESCRIPCION',a:'lvl14_txikia'},
+    {eu:'Nahikoa da',es:'Es suficiente',h:'EXPRESION',a:'lvl14_nahikoa'},
+  ],sentences:[
+    {eu:['Zenbat','balio','du','hau'],es:'¿Cuánto vale esto?',a:'lvl14_frase1'},
+    {eu:['Merkeagoa','al','daukazu'],es:'¿Tiene algo más barato?',a:'lvl14_frase2'},
+    {eu:['Txartelaz','ordaindu','nahi','dut'],es:'Quiero pagar con tarjeta',a:'lvl14_frase3'},
+    {eu:['Deskontua','egiten','al','duzu'],es:'¿Hace usted descuento?',a:'lvl14_frase4'},
+    {eu:['Hau','erosi','nahi','dut','mesedez'],es:'Quiero comprar esto, por favor',a:'lvl14_frase5'},
+  ]},
+  15:{pairs:[
+    {eu:'Ni',es:'Yo',h:'PRONOMBRE',a:'lvl15_ni'},{eu:'Zu',es:'Tú/Usted',h:'PRONOMBRE',a:'lvl15_zu'},
+    {eu:'Hura',es:'Él/Ella',h:'PRONOMBRE',a:'lvl15_hura'},{eu:'Gu',es:'Nosotros/as',h:'PRONOMBRE',a:'lvl15_gu'},
+    {eu:'Zuek',es:'Vosotros/as',h:'PRONOMBRE',a:'lvl15_zuek'},{eu:'Haiek',es:'Ellos/as',h:'PRONOMBRE',a:'lvl15_haiek'},
+    {eu:'Hau',es:'Esto/Este/Esta',h:'DEMOSTRATIVO',a:'lvl15_hau'},
+    {eu:'Hori',es:'Eso/Ese/Esa',h:'DEMOSTRATIVO',a:'lvl15_hori'},
+    {eu:'Hauek',es:'Estos/as',h:'DEMOSTRATIVO PL',a:'lvl15_hauek'},
+    {eu:'Horiek',es:'Esos/as',h:'DEMOSTRATIVO PL',a:'lvl15_horiek'},
+    {eu:'Nire',es:'Mi/Mío',h:'POSESIVO',a:'lvl15_nire'},
+    {eu:'Zure',es:'Tu/Tuyo',h:'POSESIVO',a:'lvl15_zure'},
+    {eu:'Gure',es:'Nuestro/a',h:'POSESIVO',a:'lvl15_gure'},
+    {eu:'Bere',es:'Su/Suyo',h:'POSESIVO',a:'lvl15_bere'},
+  ],sentences:[
+    {eu:['Hau','nire','liburua','da'],es:'Este es mi libro',a:'lvl15_frase1'},
+    {eu:['Hori','zure','kotxea','al','da'],es:'¿Es ese tu coche?',a:'lvl15_frase2'},
+    {eu:['Haiek','gure','lagunak','dira'],es:'Aquellos son nuestros amigos',a:'lvl15_frase3'},
+    {eu:['Bere','etxea','handia','da'],es:'Su casa es grande',a:'lvl15_frase4'},
+    {eu:['Hauek','nire','arropak','dira'],es:'Estas son mis ropas',a:'lvl15_frase5'},
+  ]},
+  16:{pairs:[
+    {eu:'Zer?',es:'¿Qué?',h:'INTERROGATIVO',a:'lvl16_zer'},{eu:'Nor?',es:'¿Quién?',h:'INTERROGATIVO',a:'lvl16_nor'},
+    {eu:'Non?',es:'¿Dónde?',h:'INTERROGATIVO',a:'lvl16_non'},{eu:'Noiz?',es:'¿Cuándo?',h:'INTERROGATIVO',a:'lvl16_noiz'},
+    {eu:'Nola?',es:'¿Cómo?',h:'INTERROGATIVO',a:'lvl16_nola'},{eu:'Zergatik?',es:'¿Por qué?',h:'INTERROGATIVO',a:'lvl16_zergatik'},
+    {eu:'Zenbat?',es:'¿Cuánto/a?',h:'INTERROGATIVO',a:'lvl16_zenbat'},{eu:'Nora?',es:'¿Adónde?',h:'INTERROGATIVO',a:'lvl16_nora'},
+    {eu:'Nondik?',es:'¿De dónde?',h:'INTERROGATIVO',a:'lvl16_nondik'},{eu:'Zeren?',es:'¿De qué?',h:'INTERROGATIVO',a:'lvl16_zeren'},
+    {eu:'Bai, jakina',es:'Sí, claro',h:'RESPUESTA',a:'lvl16_bai_jakina'},
+    {eu:'Ez, ezta ere',es:'No, tampoco',h:'RESPUESTA',a:'lvl16_ez_ezta'},
+    {eu:'Agian',es:'Quizás',h:'RESPUESTA',a:'lvl16_agian'},
+    {eu:'Ziur',es:'Seguro/Claro',h:'RESPUESTA',a:'lvl16_ziur'},
+    {eu:'Ez nago ziur',es:'No estoy seguro/a',h:'RESPUESTA',a:'lvl16_ez_nago_ziur'},
+  ],sentences:[
+    {eu:['Nor','da','hori'],es:'¿Quién es ese/esa?',a:'lvl16_frase1'},
+    {eu:['Zergatik','ez','zara','etorri'],es:'¿Por qué no has venido?',a:'lvl16_frase2'},
+    {eu:['Nola','iritsi','zara','hona'],es:'¿Cómo has llegado aquí?',a:'lvl16_frase3'},
+    {eu:['Zenbat','denbora','behar','duzu'],es:'¿Cuánto tiempo necesitas?',a:'lvl16_frase4'},
+    {eu:['Nondik','zatoz'],es:'¿De dónde vienes?',a:'lvl16_frase5'},
+  ]},
+  17:{pairs:[
+    {eu:'Naiz',es:'Soy/Estoy (yo)',h:'VERBO IZAN',a:'lvl17_naiz'},
+    {eu:'Zara',es:'Eres/Estás (tú)',h:'VERBO IZAN',a:'lvl17_zara'},
+    {eu:'Da',es:'Es/Está (él/ella)',h:'VERBO IZAN',a:'lvl17_da'},
+    {eu:'Gara',es:'Somos/Estamos',h:'VERBO IZAN',a:'lvl17_gara'},
+    {eu:'Zarete',es:'Sois/Estáis',h:'VERBO IZAN',a:'lvl17_zarete'},
+    {eu:'Dira',es:'Son/Están',h:'VERBO IZAN',a:'lvl17_dira'},
+    {eu:'Dut',es:'Lo tengo/hago (yo)',h:'VERBO UKAN',a:'lvl17_dut'},
+    {eu:'Duzu',es:'Lo tienes/haces (tú)',h:'VERBO UKAN',a:'lvl17_duzu'},
+    {eu:'Du',es:'Lo tiene/hace (él)',h:'VERBO UKAN',a:'lvl17_du'},
+    {eu:'Dugu',es:'Lo tenemos/hacemos',h:'VERBO UKAN',a:'lvl17_dugu'},
+    {eu:'Duzue',es:'Lo tenéis/hacéis',h:'VERBO UKAN',a:'lvl17_duzue'},
+    {eu:'Dute',es:'Lo tienen/hacen',h:'VERBO UKAN',a:'lvl17_dute'},
+    {eu:'Nago',es:'Estoy (ubicación)',h:'VERBO EGON',a:'lvl17_nago'},
+    {eu:'Dago',es:'Está (ubicación)',h:'VERBO EGON',a:'lvl17_dago'},
+    {eu:'Gaude',es:'Estamos (ubicación)',h:'VERBO EGON',a:'lvl17_gaude'},
+  ],sentences:[
+    {eu:['Ni','euskalduna','naiz'],es:'Yo soy vasco/a',a:'lvl17_frase1'},
+    {eu:['Zu','nongoa','zara'],es:'¿De dónde eres tú?',a:'lvl17_frase2'},
+    {eu:['Haiek','Bilbon','bizi','dira'],es:'Ellos viven en Bilbao',a:'lvl17_frase3'},
+    {eu:['Nik','kotxea','daukat'],es:'Yo tengo coche',a:'lvl17_frase4'},
+    {eu:['Guk','euskara','ikasten','dugu'],es:'Nosotros aprendemos euskera',a:'lvl17_frase5'},
+  ]},
+  18:{pairs:[
+    {eu:'Nintzen',es:'Era/Fui (yo)',h:'PASADO IZAN',a:'lvl18_nintzen'},
+    {eu:'Zen',es:'Era/Fue (él/ella)',h:'PASADO IZAN',a:'lvl18_zen'},
+    {eu:'Ginen',es:'Éramos/Fuimos',h:'PASADO IZAN',a:'lvl18_ginen'},
+    {eu:'Nuen',es:'Lo tuve/hice (yo)',h:'PASADO UKAN',a:'lvl18_nuen'},
+    {eu:'Zuen',es:'Lo tuvo/hizo (él)',h:'PASADO UKAN',a:'lvl18_zuen'},
+    {eu:'Genuen',es:'Lo tuvimos/hicimos',h:'PASADO UKAN',a:'lvl18_genuen'},
+    {eu:'Izango naiz',es:'Seré (yo)',h:'FUTURO IZAN',a:'lvl18_izango_naiz'},
+    {eu:'Izango da',es:'Será (él/ella)',h:'FUTURO IZAN',a:'lvl18_izango_da'},
+    {eu:'Egingo dut',es:'Lo haré (yo)',h:'FUTURO UKAN',a:'lvl18_egingo_dut'},
+    {eu:'Egingo du',es:'Lo hará (él/ella)',h:'FUTURO UKAN',a:'lvl18_egingo_du'},
+    {eu:'Joango naiz',es:'Iré (yo)',h:'FUTURO JOAN',a:'lvl18_joango_naiz'},
+    {eu:'Etorriko naiz',es:'Vendré (yo)',h:'FUTURO ETORRI',a:'lvl18_etorriko_naiz'},
+    {eu:'Esan zuen',es:'Dijo (él/ella)',h:'PASADO ESAN',a:'lvl18_esan_zuen'},
+    {eu:'Ikusi nuen',es:'Lo vi (yo)',h:'PASADO IKUSI',a:'lvl18_ikusi_nuen'},
+    {eu:'Erosiko dut',es:'Lo compraré (yo)',h:'FUTURO EROSI',a:'lvl18_erosiko_dut'},
+  ],sentences:[
+    {eu:['Atzo','zinera','joan','nintzen'],es:'Ayer fui al cine',a:'lvl18_frase1'},
+    {eu:['Bihar','lagunarekin','egongo','naiz'],es:'Mañana estaré con un amigo',a:'lvl18_frase2'},
+    {eu:['Iaz','Parisera','joan','ginen'],es:'El año pasado fuimos a París',a:'lvl18_frase3'},
+    {eu:['Datorren','astean','lan','egingo','dut'],es:'La semana que viene trabajaré',a:'lvl18_frase4'},
+    {eu:['Haurtzaroan','txikia','nintzen'],es:'De niño/a era pequeño/a',a:'lvl18_frase5'},
+  ]},
+  19:{pairs:[
+    {eu:'Handia',es:'Grande',h:'TAMANO',a:'lvl19_handia'},{eu:'Txikia',es:'Pequeño/a',h:'TAMANO',a:'lvl19_txikia'},
+    {eu:'Luzea',es:'Largo/a',h:'TAMANO',a:'lvl19_luzea'},{eu:'Laburra',es:'Corto/a',h:'TAMANO',a:'lvl19_laburra'},
+    {eu:'Zaharra',es:'Viejo/a',h:'EDAD',a:'lvl19_zaharra'},{eu:'Gaztea',es:'Joven',h:'EDAD',a:'lvl19_gaztea'},
+    {eu:'Berria',es:'Nuevo/a',h:'CUALIDAD',a:'lvl19_berria'},{eu:'Ederra',es:'Bonito/a',h:'ESTETICA',a:'lvl19_ederra'},
+    {eu:'Itsusia',es:'Feo/a',h:'ESTETICA',a:'lvl19_itsusia'},{eu:'Azkarra',es:'Rápido/a',h:'CUALIDAD',a:'lvl19_azkarra'},
+    {eu:'Motela',es:'Lento/a',h:'CUALIDAD',a:'lvl19_motela'},{eu:'Gogorra',es:'Duro/a',h:'CUALIDAD',a:'lvl19_gogorra'},
+    {eu:'Biguna',es:'Blando/a',h:'CUALIDAD',a:'lvl19_biguna'},{eu:'Garbia',es:'Limpio/a',h:'CUALIDAD',a:'lvl19_garbia'},
+    {eu:'Zikina',es:'Sucio/a',h:'CUALIDAD',a:'lvl19_zikina'},
+  ],sentences:[
+    {eu:['Nire','anaia','oso','azkarra','da'],es:'Mi hermano es muy listo',a:'lvl19_frase1'},
+    {eu:['Etxe','zaharra','baina','ederra','da'],es:'La casa es vieja pero bonita',a:'lvl19_frase2'},
+    {eu:['Haurra','txikia','eta','polita','da'],es:'El niño/a es pequeño y bonito',a:'lvl19_frase3'},
+    {eu:['Lan','hau','oso','gogorra','da'],es:'Este trabajo es muy difícil',a:'lvl19_frase4'},
+    {eu:['Kale','hau','luze','eta','garbia','da'],es:'Esta calle es larga y limpia',a:'lvl19_frase5'},
+  ]},
+  20:{pairs:[
+    {eu:'Hori bai!',es:'¡Eso sí!',h:'EXPRESION',a:'lvl20_hori_bai'},
+    {eu:'Zer demontre!',es:'¡Qué demonios!',h:'EXPRESION',a:'lvl20_zer_demontre'},
+    {eu:'Egia esan',es:'A decir verdad',h:'EXPRESION',a:'lvl20_egia_esan'},
+    {eu:'Tira, tira',es:'Vamos, vamos',h:'EXPRESION',a:'lvl20_tira'},
+    {eu:'Zorte on!',es:'¡Buena suerte!',h:'DESEO',a:'lvl20_zorte_on'},
+    {eu:'Osasun!',es:'¡Salud! (brindis)',h:'DESEO',a:'lvl20_osasun'},
+    {eu:'Ongi ibili',es:'Que te vaya bien',h:'DESPEDIDA',a:'lvl20_ongi_ibili'},
+    {eu:'Urte berri on!',es:'¡Feliz año nuevo!',h:'CELEBRACION',a:'lvl20_urte_berri'},
+    {eu:'Zorionak!',es:'¡Felicidades!',h:'CELEBRACION',a:'lvl20_zorionak'},
+    {eu:'Ez horregatik',es:'De nada',h:'RESPUESTA',a:'lvl20_ez_horregatik'},
+    {eu:'Hitz batean',es:'En una palabra',h:'EXPRESION',a:'lvl20_hitz_batean'},
+    {eu:'Nahi eta nahi ez',es:'Quieras o no',h:'EXPRESION',a:'lvl20_nahi_eta_nahi'},
+    {eu:'Pixka bat',es:'Un poco',h:'EXPRESION',a:'lvl20_pixka_bat'},
+    {eu:'Gutxi gorabehera',es:'Más o menos',h:'EXPRESION',a:'lvl20_gutxi_gorabehera'},
+    {eu:'Azkenean',es:'Al final/Por fin',h:'EXPRESION',a:'lvl20_azkenean'},
+  ],sentences:[
+    {eu:['Zorte','on','azterketan'],es:'Buena suerte en el examen',a:'lvl20_frase1'},
+    {eu:['Zorionak','zure','urtebetetzeagatik'],es:'Felicidades por tu cumpleaños',a:'lvl20_frase2'},
+    {eu:['Pixka','bat','itxaron','mesedez'],es:'Espera un momento, por favor',a:'lvl20_frase3'},
+    {eu:['Azkenean','etorri','zara'],es:'Al final has venido',a:'lvl20_frase4'},
+  ]},
+};
+
+const ACHIEVEMENTS = [
+  {id:'first',icon:'⭐',name:'LEHEN PAUSOA',desc:'Primera respuesta correcta',check:s=>s.correct>=1},
+  {id:'streak3',icon:'🔥',name:'HIRU SEGIDA',desc:'Racha de 3 aciertos',check:s=>s.maxStreak>=3},
+  {id:'streak5',icon:'💥',name:'BOST SEGIDA',desc:'Racha de 5 aciertos',check:s=>s.maxStreak>=5},
+  {id:'streak10',icon:'🌟',name:'HAMAR SEGIDA',desc:'Racha de 10 aciertos',check:s=>s.maxStreak>=10},
+  {id:'xp100',icon:'💎',name:'EHUN XP',desc:'Llegar a 100 XP',check:s=>s.xp>=100},
+  {id:'xp500',icon:'👑',name:'BOSTEHUN XP',desc:'Llegar a 500 XP',check:s=>s.xp>=500},
+  {id:'levelup',icon:'🏆',name:'MAILA BERRIA',desc:'Desbloquear un nuevo nivel',check:s=>s.levelsUnlocked>=2},
+  {id:'daily',icon:'📅',name:'ERRONKA',desc:'Completar un reto diario',check:s=>s.dailiesCompleted>=1},
+  {id:'sprint10',icon:'⚡',name:'SPRINT TXAPELDUN',desc:'10+ aciertos en Sprint',check:s=>s.bestSprint>=10},
+  {id:'perfectmatch',icon:'🎯',name:'GUZTIAK LOTU',desc:'Emparejar sin errores',check:s=>s.perfectMatches>=1},
+];
+
+const DAILIES = [
+  {id:'streak5',desc:'Consigue una racha de 5 aciertos seguidos',target:5,stat:'streak'},
+  {id:'sprint8',desc:'Consigue 8 o más aciertos en Sprint',target:8,stat:'sprintScore'},
+  {id:'correct10',desc:'Responde 10 preguntas correctamente',target:10,stat:'sessionCorrect'},
+  {id:'levels3',desc:'Juega en 3 niveles distintos',target:3,stat:'levelsPlayed'},
+  {id:'match2',desc:'Completa 2 rondas de Emparejar',target:2,stat:'matchRounds'},
+  {id:'xp30',desc:'Gana 30 XP en esta sesión',target:30,stat:'sessionXP'},
+  {id:'modes4',desc:'Prueba 4 modos de juego distintos',target:4,stat:'modesPlayed'},
+];
+
+// ── STATE ──
+let S = {
+  xp:0,score:0,correct:0,lives:3,maxStreak:0,levelsUnlocked:1,
+  bestSprint:0,perfectMatches:0,dailiesCompleted:0,achievements:[],
+  currentLevel:1,currentGame:'translate',playerName:'',
+  dailyDate:'',dailyDone:false,dailyProgress:0,
+  streak:0,questionIndex:0,answered:false,
+  timer:null,timeLeft:15,
+  matchSel:null,matchedPairs:new Set(),matchPairs:[],matchErrors:0,
+  placedWords:[],_buildSent:null,
+  sprintTimer:null,sprintActive:false,_sprintSecs:60,sprintScore:0,
+  sessionCorrect:0,sessionXP:0,
+  levelsPlayed:new Set(),modesPlayed:new Set(),matchRounds:0,
+};
+
+// ── STORAGE ──
+const SAVE_KEY = 'euskera-v3-save';
+async function saveGame(silent) {
+  try {
+    const data = {
+      xp:S.xp,score:S.score,correct:S.correct,lives:S.lives,maxStreak:S.maxStreak,
+      levelsUnlocked:S.levelsUnlocked,bestSprint:S.bestSprint,perfectMatches:S.perfectMatches,
+      dailiesCompleted:S.dailiesCompleted,achievements:S.achievements,
+      currentLevel:S.currentLevel,currentGame:S.currentGame,
+      playerName:S.playerName,dailyDate:S.dailyDate,dailyDone:S.dailyDone,dailyProgress:S.dailyProgress,
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    if (!silent) showSaveInd('💾 GUARDADO');
+  } catch(e) { if (!silent) showSaveInd('! ERROR'); }
+}
+function loadSave() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw) { Object.assign(S, JSON.parse(raw)); return true; }
+  } catch(e) {}
+  return false;
+}
+function deleteSave() { localStorage.removeItem(SAVE_KEY); }
+function showSaveInd(msg) {
+  const el = document.getElementById('save-ind');
+  if (el) { el.textContent = msg; setTimeout(() => { if(el) el.textContent=''; }, 2000); }
+}
+
+// ── INIT ──
+function initStart() {
+  const hasSave = loadSave();
+  const ca = document.getElementById('continue-area');
+  if (hasSave && S.playerName && ca) {
+    ca.innerHTML = `<div class="continue-box" onclick="startGame(true)">
+      ▶ CONTINUAR COMO ${S.playerName}<br>
+      <span style="font-size:5px;color:var(--muted)">XP: ${S.xp} · SCORE: ${S.score}</span>
+    </div>`;
+  }
+  if (window.speechSynthesis) window.speechSynthesis.getVoices();
+}
+
+function startGame(cont) {
+  getAC();
+  if (!cont) {
+    const name = ((document.getElementById('name-input')||{}).value||'JUGADOR').trim().toUpperCase().substring(0,12)||'JUGADOR';
+    S = {xp:0,score:0,correct:0,lives:3,maxStreak:0,levelsUnlocked:1,bestSprint:0,perfectMatches:0,
+      dailiesCompleted:0,achievements:[],currentLevel:1,currentGame:'translate',playerName:name,
+      dailyDate:'',dailyDone:false,dailyProgress:0,streak:0,questionIndex:0,answered:false,
+      timer:null,timeLeft:15,matchSel:null,matchedPairs:new Set(),matchPairs:[],matchErrors:0,
+      placedWords:[],_buildSent:null,sprintTimer:null,sprintActive:false,_sprintSecs:60,sprintScore:0,
+      sessionCorrect:0,sessionXP:0,levelsPlayed:new Set(),modesPlayed:new Set(),matchRounds:0};
+  } else {
+    S.matchedPairs=new Set();S.levelsPlayed=new Set();S.modesPlayed=new Set();
+    S.sessionCorrect=0;S.sessionXP=0;S.matchRounds=0;
+  }
+  sfxStart();
+  document.getElementById('screen-start').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  const hn = document.getElementById('hud-name'); if(hn) hn.textContent = '▶ '+S.playerName;
+  renderLevels(); renderTabs(); renderHUD(); checkDailyReset(); loadQuestion(); saveGame(true);
+}
+
+function goToStart() {
+  clearTimer(); clearSprint();
+  document.getElementById('screen-game').classList.remove('active');
+  document.getElementById('screen-start').classList.add('active');
+  initStart();
+}
+
+function confirmReset() {
+  if (confirm('¿Borrar partida? Se perderá todo el progreso.')) {
+    deleteSave(); S.playerName=''; S.xp=0; S.score=0; goToStart();
+  }
+}
+
+// ── NAV ──
+function showNav(tab) {
+  ['play','daily','achieve','menu'].forEach(t => {
+    const el = document.getElementById('tab-'+t); if(el) el.style.display = t===tab?'block':'none';
+    const nb = document.getElementById('nav-'+t); if(nb) nb.classList.toggle('active', t===tab);
+  });
+  if (tab==='daily') renderDaily();
+  if (tab==='achieve') renderAchievements();
+  if (tab!=='play') { clearTimer(); clearSprint(); }
+}
+
+// ── HUD ──
+function getUnlocked() { return LEVELS.map(l=>({...l,unlocked:l.id===1||S.xp>=l.xpNeeded})); }
+function xpForNext() { const n=LEVELS.find(l=>l.id===S.currentLevel+1); return n?n.xpNeeded:99999; }
+function xpForCurrent() { return LEVELS.find(l=>l.id===S.currentLevel)?.xpNeeded||0; }
+function setEl(id,val) { const e=document.getElementById(id); if(e) e.textContent=val; }
+
+function renderHUD() {
+  const lv = Math.max(0,S.lives);
+  const hEl = document.getElementById('h-hearts');
+  if (hEl) { hEl.textContent='♥'.repeat(lv)+'♡'.repeat(Math.max(0,3-lv)); hEl.style.color=lv<=1?'#ff4444':lv===2?'#ffaa00':'#ff6688'; }
+  setEl('h-score',S.score); setEl('h-streak',S.streak); setEl('h-xp',S.xp);
+  const nxp=xpForNext(),prevXp=xpForCurrent();
+  setEl('h-xpnext',nxp===99999?'MAX':nxp);
+  const pct=nxp===99999?100:Math.min(100,Math.round(((S.xp-prevXp)/Math.max(1,nxp-prevXp))*100));
+  const bar=document.getElementById('h-xpbar'); if(bar) bar.style.width=pct+'%';
+}
+
+function renderLevels() {
+  const lvls = getUnlocked();
+  const el = document.getElementById('level-btns'); if(!el) return;
+  el.innerHTML = lvls.map(l=>`<button class="lvl-btn ${l.id===S.currentLevel?'active':''} ${!l.unlocked?'locked':''}"
+    onclick="${l.unlocked?`selectLevel(${l.id})`:`showLock(${l.xpNeeded})`}">${l.label}${!l.unlocked?' 🔒':''}</button>`).join('');
+}
+
+function renderTabs() {
+  const el = document.getElementById('game-tabs'); if(!el) return;
+  el.innerHTML = GAME_TYPES.map(g=>`<button class="tab-btn ${g.id===S.currentGame?'active':''}" onclick="selectGame('${g.id}')">${g.label}</button>`).join('');
+}
+
+function selectLevel(id) {
+  S.currentLevel=id; S.questionIndex=0; S.answered=false; S.levelsPlayed.add(id);
+  renderLevels(); renderHUD(); loadQuestion(); updateDailyStat('levelsPlayed',S.levelsPlayed.size);
+}
+function selectGame(g) {
+  S.currentGame=g; S.questionIndex=0; S.answered=false; S.modesPlayed.add(g);
+  renderTabs(); clearTimer(); clearSprint(); loadQuestion(); updateDailyStat('modesPlayed',S.modesPlayed.size);
+}
+function showLock(xp) {
+  document.getElementById('game-content').innerHTML=`<div class="center-state">
+    <div style="font-size:24px;margin-bottom:10px">🔒</div>
+    <div style="font-size:7px;margin-bottom:7px">BLOQUEADO</div>
+    <div style="color:var(--acc);font-size:6px">NECESITAS ${xp} XP</div>
+    <div style="color:var(--muted);font-size:5px;margin-top:5px">TIENES ${S.xp} XP</div>
+  </div>`;
+}
+function updateProg() { const pct=((S.questionIndex%10)/10)*100; const el=document.getElementById('prog-bar'); if(el) el.style.width=pct+'%'; }
+
+// ── QUESTION ──
+function shuffle(a) { return [...a].sort(()=>Math.random()-.5); }
+function getQ() { const p=C[S.currentLevel].pairs; return p[S.questionIndex%p.length]; }
+
+function loadQuestion() {
+  clearTimer(); clearSprint();
+  S.answered=false; S.matchSel=null; S.matchedPairs=new Set(); S.matchErrors=0; S.placedWords=[];
+  const gc = document.getElementById('game-content'); if(!gc) return;
+  const q = getQ();
+  if (S.currentGame==='translate') renderTranslate(q,gc);
+  else if (S.currentGame==='match') renderMatch(gc);
+  else if (S.currentGame==='fill') renderFill(q,gc);
+  else if (S.currentGame==='build') renderBuild(gc);
+  else if (S.currentGame==='sprint') renderSprint(gc);
+  else renderEntzun(q,gc);
+  updateProg();
+}
+
+// ── TRANSLATE ──
+function renderTranslate(q,gc) {
+  const dir = Math.random()>.5?'eu':'es';
+  const question=dir==='eu'?q.eu:q.es, answer=dir==='eu'?q.es:q.eu;
+  const dist = shuffle(C[S.currentLevel].pairs.filter(p=>p!==q)).slice(0,3).map(p=>dir==='eu'?p.es:p.eu);
+  const opts = shuffle([answer,...dist]);
+  gc.innerHTML=`<div class="q-type">★ ${dir==='eu'?'EUSKERA → ESPAÑOL':'ESPAÑOL → EUSKERA'}</div>
+  <div class="timer-row"><div class="timer-track"><div class="timer-fill" id="tf" style="width:100%"></div></div><span class="timer-num" id="tn">15</span></div>
+  <div class="q-text">${question}${dir==='eu'?speakBtn(q.a,q.eu):''}</div>
+  <div class="q-hint">[${q.h}]</div>
+  <div class="options-grid">${opts.map(o=>`<button class="opt-btn" onclick="checkTr(this,'${esc(o)}','${esc(answer)}','${esc(q.eu)}','${esc(q.es)}','${esc(q.a)}')">${o}</button>`).join('')}</div>
+  <div id="fb"></div><button id="nb" class="px-btn accent" style="display:none" onclick="nextQ()">▶ SIGUIENTE</button>`;
+  startTimer(15,()=>checkTr(null,'__t__',answer,q.eu,q.es,q.a));
+}
+function checkTr(btn,chosen,answer,eu,es,audio) {
+  if(S.answered)return; clearTimer(); S.answered=true;
+  const ok=chosen===answer;
+  if(ok) playAudio(audio);
+  document.querySelectorAll('.opt-btn').forEach(o=>{
+    o.classList.add('disabled');
+    if(o.textContent.trim()===answer) o.classList.add('correct');
+    else if(btn&&o===btn&&!ok) o.classList.add('wrong');
+  });
+  showFB(ok,eu,es); updateScore(ok); if(!ok) doShake();
+}
+
+// ── FILL ──
+function renderFill(q,gc) {
+  const dir=Math.random()>.5?'eu':'es';
+  const question=dir==='eu'?q.eu:q.es, answer=dir==='eu'?q.es:q.eu;
+  gc.innerHTML=`<div class="q-type">★ ${dir==='eu'?'EUSKERA → ESPAÑOL':'ESPAÑOL → EUSKERA'}</div>
+  <div class="q-text">${question}${dir==='eu'?speakBtn(q.a,q.eu):''}</div>
+  <div class="q-hint">[${q.h}]</div>
+  <input class="fill-in" id="fi" type="text" placeholder="ESCRIBE AQUI..." autocomplete="off" autocorrect="off" autocapitalize="off"/>
+  <button class="px-btn" onclick="checkFill('${esc(answer)}','${esc(q.eu)}','${esc(q.es)}','${esc(q.a)}')">▶ COMPROBAR</button>
+  <div id="fb"></div><button id="nb" class="px-btn accent" style="display:none" onclick="nextQ()">▶ SIGUIENTE</button>`;
+  const fi=document.getElementById('fi');
+  if(fi) fi.addEventListener('keydown',e=>{if(e.key==='Enter')checkFill(answer,q.eu,q.es,q.a);});
+}
+function checkFill(answer,eu,es,audio) {
+  if(S.answered)return; S.answered=true;
+  const fi=document.getElementById('fi'); if(!fi)return;
+  const val=(fi.value||'').trim().toLowerCase();
+  const ok=val===answer.toLowerCase()||similarity(val,answer.toLowerCase())>.78;
+  if(ok) playAudio(audio);
+  fi.classList.add(ok?'correct':'wrong'); fi.disabled=true;
+  showFB(ok,eu,es,ok?null:'RESP: '+answer); updateScore(ok); if(!ok) doShake();
+}
+
+// ── MATCH ──
+function renderMatch(gc) {
+  const pairs=shuffle(C[S.currentLevel].pairs).slice(0,5);
+  S.matchPairs=pairs; S.matchErrors=0;
+  const left=shuffle(pairs.map(p=>p.eu)), right=shuffle(pairs.map(p=>p.es));
+  gc.innerHTML=`<div class="q-type">★ CONECTA EUSKERA ↔ ESPAÑOL</div>
+  <div style="font-size:5px;color:var(--muted);margin-bottom:8px">TOCA UNA DE CADA COLUMNA</div>
+  <div class="match-grid">
+    <div class="match-col">${left.map((w,i)=>{const p=pairs.find(p=>p.eu===w);return`<div class="match-item" id="ml${i}" onclick="selMatch('left','${esc(w)}','ml${i}')">${w} ${speakBtn(p?p.a:'',w)}</div>`;}).join('')}</div>
+    <div class="match-col">${right.map((w,i)=>`<div class="match-item" id="mr${i}" onclick="selMatch('right','${esc(w)}','mr${i}')">${w}</div>`).join('')}</div>
+  </div>
+  <div id="fb"></div><button id="nb" class="px-btn accent" style="display:none" onclick="nextQ()">▶ SIGUIENTE</button>`;
+}
+function selMatch(side,word,elId) {
+  const el=document.getElementById(elId); if(!el||el.classList.contains('matched'))return;
+  if(!S.matchSel){S.matchSel={side,word,elId};el.classList.add('selected');}
+  else{
+    if(S.matchSel.elId===elId){el.classList.remove('selected');S.matchSel=null;return;}
+    if(S.matchSel.side===side){document.getElementById(S.matchSel.elId)?.classList.remove('selected');S.matchSel={side,word,elId};el.classList.add('selected');return;}
+    const euW=side==='left'?word:S.matchSel.word, esW=side==='right'?word:S.matchSel.word;
+    const pair=S.matchPairs.find(p=>p.eu===euW&&p.es===esW);
+    const prev=document.getElementById(S.matchSel.elId);
+    if(pair){
+      el.classList.remove('selected');el.classList.add('matched');prev?.classList.remove('selected');prev?.classList.add('matched');
+      S.matchedPairs.add(euW); sfxCorrect(); playAudio(pair.a);
+      if(S.matchedPairs.size===S.matchPairs.length){
+        S.matchRounds++; updateDailyStat('matchRounds',S.matchRounds);
+        if(S.matchErrors===0){S.perfectMatches++;showBanner('★ PERFEKTUA! SIN ERRORES ★','achieve');sfxAchieve();}
+        setTimeout(()=>{showFB(true,'','');updateScore(true);},250);
+      }
+    } else {
+      el.classList.add('wrong-match');prev?.classList.add('wrong-match');
+      setTimeout(()=>{el.classList.remove('wrong-match','selected');prev?.classList.remove('wrong-match','selected');},500);
+      sfxWrong(); S.matchErrors++; S.streak=Math.max(0,S.streak-1); renderHUD();
+    }
+    S.matchSel=null;
+  }
+}
+
+// ── BUILD ──
+function renderBuild(gc) {
+  const sents=C[S.currentLevel].sentences;
+  const sent=sents[Math.floor(Math.random()*sents.length)];
+  S._buildSent=sent; S.placedWords=[];
+  const words=shuffle(sent.eu);
+  gc.innerHTML=`<div class="q-type">★ ORDENA LAS PALABRAS EN EUSKERA</div>
+  <div class="q-text" style="font-size:9px;color:var(--muted)">"${sent.es}"</div>
+  <div style="height:8px"></div>
+  <div class="sentence-build" id="sb"><span class="ph-text" id="ph">TOCA EN ORDEN...</span></div>
+  <div class="word-bank" id="wb">${words.map((w,i)=>`<div class="word-chip" id="wc${i}" onclick="placeWord('${esc(w)}',${i})">${w}</div>`).join('')}</div>
+  <button class="px-btn" onclick="checkBuild()">▶ COMPROBAR</button>
+  <div id="fb"></div><button id="nb" class="px-btn accent" style="display:none" onclick="nextQ()">▶ SIGUIENTE</button>`;
+}
+function placeWord(word,idx) {
+  const chip=document.getElementById('wc'+idx); if(!chip||chip.classList.contains('used'))return;
+  chip.classList.add('used'); S.placedWords.push({word,idx});
+  const sb=document.getElementById('sb'); const ph=document.getElementById('ph'); if(ph)ph.remove();
+  const span=document.createElement('div'); span.className='placed-word'; span.textContent=word;
+  span.onclick=e=>{e.stopPropagation();removePlaced(idx,span);}; sb.appendChild(span);
+}
+function removePlaced(idx,span) {
+  S.placedWords=S.placedWords.filter(w=>w.idx!==idx);
+  document.getElementById('wc'+idx)?.classList.remove('used'); span.remove();
+  const sb=document.getElementById('sb');
+  if(!sb.querySelector('.placed-word')){const ph=document.createElement('span');ph.className='ph-text';ph.id='ph';ph.textContent='TOCA EN ORDEN...';sb.appendChild(ph);}
+}
+function checkBuild() {
+  if(S.answered)return; S.answered=true;
+  const expected=S._buildSent.eu, placed=(S.placedWords||[]).map(w=>w.word);
+  const ok=JSON.stringify(placed)===JSON.stringify(expected);
+  if(ok) playAudio(S._buildSent.a);
+  showFB(ok,expected.join(' '),S._buildSent.es,ok?null:'ORDEN: '+expected.join(' '));
+  updateScore(ok); if(!ok) doShake();
+}
+
+// ── SPRINT ──
+function renderSprint(gc) {
+  S.sprintScore=0; S.sprintActive=true; S._sprintSecs=60;
+  gc.innerHTML=`<div class="q-type">★ SPRINT — 60 SEGUNDOS</div>
+  <div class="sprint-time" id="sprint-time">60</div>
+  <div class="sprint-counter" id="sprint-count">0</div>
+  <div class="sprint-label">ACIERTOS</div>
+  <div id="sprint-q"></div>`;
+  nextSprintQ();
+  S.sprintTimer=setInterval(()=>{
+    S._sprintSecs--;
+    const te=document.getElementById('sprint-time');
+    if(te){te.textContent=S._sprintSecs;te.className='sprint-time'+(S._sprintSecs<=10?' danger':'');}
+    if(S._sprintSecs<=10) sfxTimer();
+    if(S._sprintSecs<=0){clearSprint();sprintEnd();}
+  },1000);
+}
+function nextSprintQ() {
+  const pairs=C[S.currentLevel].pairs;
+  const q=pairs[Math.floor(Math.random()*pairs.length)];
+  const dir=Math.random()>.5?'eu':'es';
+  const question=dir==='eu'?q.eu:q.es, answer=dir==='eu'?q.es:q.eu;
+  const dist=shuffle(pairs.filter(p=>p!==q)).slice(0,3).map(p=>dir==='eu'?p.es:p.eu);
+  const opts=shuffle([answer,...dist]);
+  const sq=document.getElementById('sprint-q'); if(!sq)return;
+  sq.innerHTML=`<div class="q-text" style="font-size:11px">${question}${dir==='eu'?speakBtn(q.a,q.eu):''}</div>
+  <div class="options-grid">${opts.map(o=>`<button class="opt-btn" onclick="checkSprint(this,'${esc(o)}','${esc(answer)}','${esc(q.a)}')">${o}</button>`).join('')}</div>`;
+}
+function checkSprint(btn,chosen,answer,audio) {
+  if(!S.sprintActive)return;
+  const ok=chosen===answer;
+  document.querySelectorAll('#sprint-q .opt-btn').forEach(o=>{
+    o.classList.add('disabled');
+    if(o.textContent.trim()===answer) o.classList.add('correct');
+    else if(o===btn&&!ok) o.classList.add('wrong');
+  });
+  if(ok){
+    sfxCorrect(); playAudio(audio); S.sprintScore++; S.correct++; S.streak++; S.sessionCorrect++;
+    S.xp+=8; S.score+=80; S.sessionXP+=8;
+    if(S.streak>S.maxStreak) S.maxStreak=S.streak;
+    const sc=document.getElementById('sprint-count'); if(sc) sc.textContent=S.sprintScore;
+    renderHUD(); checkAchievements();
+  } else { sfxWrong(); S.streak=0; doShake(); renderHUD(); }
+  setTimeout(nextSprintQ, ok?550:850);
+}
+function sprintEnd() {
+  S.sprintActive=false;
+  if(S.sprintScore>S.bestSprint) S.bestSprint=S.sprintScore;
+  updateDailyStat('sprintScore',S.sprintScore); checkAchievements(); sfxGameover();
+  const gc=document.getElementById('game-content');
+  if(gc) gc.innerHTML=`<div class="center-state">
+    <div class="big-text" style="color:var(--acc)">SPRINT!</div>
+    <div style="font-size:14px;color:var(--green);margin-bottom:8px">${S.sprintScore} ACIERTOS</div>
+    <div style="font-size:6px;color:var(--muted);margin-bottom:16px">RECORD: ${S.bestSprint}</div>
+    ${S.sprintScore>=10?'<div style="color:var(--purple);font-size:7px;margin-bottom:12px">★ SPRINT TXAPELDUN! ★</div>':''}
+    <button class="px-btn accent" onclick="loadQuestion()">▶ JUGAR DE NUEVO</button>
+  </div>`;
+  saveGame(true);
+}
+function clearSprint(){if(S.sprintTimer){clearInterval(S.sprintTimer);S.sprintTimer=null;}S.sprintActive=false;}
+
+// ── ENTZUN ──
+function renderEntzun(q,gc) {
+  const pairs=C[S.currentLevel].pairs;
+  const dist=shuffle(pairs.filter(p=>p!==q)).slice(0,3);
+  const opts=shuffle([q,...dist]);
+  gc.innerHTML=`<div class="q-type">★ ENTZUN — ADIVINA LA PALABRA</div>
+  <div class="timer-row"><div class="timer-track"><div class="timer-fill" id="tf" style="width:100%"></div></div><span class="timer-num" id="tn">15</span></div>
+  <div style="font-size:6px;color:var(--muted);margin-bottom:8px">EN ESPAÑOL:</div>
+  <div class="q-text">${q.es}</div>
+  <div class="q-hint">[${q.h}] — ELIGE LA PALABRA EN EUSKERA</div>
+  <div class="options-grid">${opts.map(o=>`<button class="opt-btn" onclick="checkEntzun(this,'${esc(o.eu)}','${esc(q.eu)}','${esc(q.eu)}','${esc(q.es)}','${esc(o.a)}')">${o.eu} ${speakBtn(o.a,o.eu)}</button>`).join('')}</div>
+  <div id="fb"></div><button id="nb" class="px-btn accent" style="display:none" onclick="nextQ()">▶ SIGUIENTE</button>`;
+  startTimer(15,()=>checkEntzun(null,'__t__',q.eu,q.eu,q.es,q.a));
+}
+function checkEntzun(btn,chosen,answer,eu,es,audio) {
+  if(S.answered)return; clearTimer(); S.answered=true;
+  const ok=chosen===answer;
+  if(ok) playAudio(audio);
+  document.querySelectorAll('.opt-btn').forEach(o=>{
+    o.classList.add('disabled');
+    const txt=o.textContent.replace('🔊','').trim();
+    if(txt===answer) o.classList.add('correct');
+    else if(btn&&o===btn&&!ok) o.classList.add('wrong');
+  });
+  showFB(ok,eu,es); updateScore(ok); if(!ok) doShake();
+}
+
+// ── SCORE & FEEDBACK ──
+function getXpGain(){return 10+(S.streak>=3?5:0)+(S.streak>=6?5:0);}
+function showFB(ok,eu,es,extra){
+  const fb=document.getElementById('fb');if(!fb)return;
+  fb.innerHTML=`<div class="fb-box ${ok?'correct':'wrong'}">
+    <div class="fb-main">${ok?'★ ZUZEN! +'+getXpGain()+' XP':'✗ OKER!'}</div>
+    ${extra?`<div class="fb-sub">${extra}</div>`:''}
+    ${eu&&es&&!ok?`<div class="fb-sub" style="margin-top:3px">${eu} = ${es}</div>`:''}
+  </div>`;
+  const nb=document.getElementById('nb');if(nb)nb.style.display='block';
+}
+function updateScore(ok){
+  if(ok){
+    const gain=getXpGain();S.xp+=gain;S.score+=gain*10;S.correct++;S.streak++;S.sessionCorrect++;S.sessionXP+=gain;
+    if(S.streak>S.maxStreak)S.maxStreak=S.streak;
+    sfxCorrect();checkUnlocks();checkAchievements();
+    if(S.streak===3||S.streak===5||S.streak===10){sfxCombo();showBanner('★ '+S.streak+'x COMBO! BONUS XP ★','combo');}
+    updateDailyStat('streak',S.streak);updateDailyStat('sessionCorrect',S.sessionCorrect);updateDailyStat('sessionXP',S.sessionXP);
+  } else {
+    sfxWrong();S.streak=0;S.lives=Math.max(0,S.lives-1);
+    if(S.lives===0){sfxGameover();setTimeout(gameOver,800);}
+  }
+  renderHUD();saveGame(true);
+}
+function checkUnlocks(){
+  LEVELS.forEach(l=>{if(l.id>1&&S.xp>=l.xpNeeded&&l.id>S.levelsUnlocked){
+    S.levelsUnlocked=l.id;sfxUnlock();showBanner('★ '+l.label+' DESBLOQUEADO: '+l.name+' ★','unlock');renderLevels();
+  }});
+}
+function gameOver(){sfxGameover();
+  const gc=document.getElementById('game-content');if(!gc)return;
+  gc.innerHTML=`<div class="center-state">
+    <div class="big-text" style="color:var(--red)">GAME OVER</div>
+    <div style="color:var(--acc);font-size:10px;margin-bottom:7px">SCORE: ${S.score}</div>
+    <div style="color:var(--muted);font-size:5px;margin-bottom:16px">ACIERTOS: ${S.correct} · XP: ${S.xp}</div>
+    <button class="px-btn accent" onclick="resetLives()">▶ CONTINUAR</button>
+  </div>`;}
+function resetLives(){S.lives=3;S.streak=0;saveGame(true);renderHUD();loadQuestion();}
+function nextQ(){S.questionIndex++;loadQuestion();}
+function doShake(){const ga=document.getElementById('game-content');if(!ga)return;ga.classList.add('shake');setTimeout(()=>ga.classList.remove('shake'),380);}
+function showBanner(txt,cls){
+  const b=document.createElement('div');b.className='banner '+cls;b.textContent=txt;
+  const gc=document.getElementById('game-content');if(!gc)return;
+  gc.insertBefore(b,gc.firstChild);setTimeout(()=>{try{b.remove();}catch(e){}},2200);
+}
+
+// ── TIMER ──
+function startTimer(secs,onEnd){
+  S.timeLeft=secs;
+  S.timer=setInterval(()=>{
+    S.timeLeft--;
+    const tf=document.getElementById('tf'),tn=document.getElementById('tn');
+    if(tf)tf.style.width=(S.timeLeft/secs*100)+'%';if(tn)tn.textContent=S.timeLeft;
+    if(S.timeLeft<=5){if(tf)tf.style.background='var(--red)';if(tn)tn.style.color='var(--red)';sfxTimer();}
+    if(S.timeLeft<=0){clearTimer();if(!S.answered)onEnd();}
+  },1000);
+}
+function clearTimer(){if(S.timer){clearInterval(S.timer);S.timer=null;}}
+
+// ── DAILY ──
+function getTodayKey(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;}
+function getDailyChallenge(){return DAILIES[new Date().getDay()%DAILIES.length];}
+function checkDailyReset(){const t=getTodayKey();if(S.dailyDate!==t){S.dailyDate=t;S.dailyDone=false;S.dailyProgress=0;}}
+function updateDailyStat(stat,val){
+  const ch=getDailyChallenge();if(S.dailyDone)return;
+  if(ch.stat===stat){
+    S.dailyProgress=Math.max(S.dailyProgress||0,val);
+    if(S.dailyProgress>=ch.target){S.dailyDone=true;S.dailiesCompleted++;sfxAchieve();showBanner('★ ERRONKA OSATUTA! RETO DIARIO ★','achieve');checkAchievements();saveGame(true);}
+  }
+}
+function renderDaily(){
+  const ch=getDailyChallenge(),prog=Math.min(S.dailyProgress||0,ch.target),pct=Math.round((prog/ch.target)*100);
+  const dc=document.getElementById('daily-content');if(!dc)return;
+  const dn=['DOM','LUN','MAR','MIE','JUE','VIE','SAB'],today=dn[new Date().getDay()];
+  dc.innerHTML=`<div class="daily-box">
+    <div class="daily-title">★ RETO DEL DIA — ${today}</div>
+    <div class="daily-desc">${ch.desc}</div>
+    ${S.dailyDone?'<div class="daily-done">✓ COMPLETADO — ONGI EGINA!</div>':`<div class="daily-prog"><div class="daily-prog-fill" style="width:${pct}%"></div></div><div class="daily-nums">${prog} / ${ch.target}</div>`}
+  </div>
+  <div style="font-size:5px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;">SEMANA COMPLETA:</div>
+  ${DAILIES.map((d,i)=>`<div style="background:var(--dark);border:2px solid ${i===new Date().getDay()%DAILIES.length?'var(--orange)':'var(--border)'};padding:7px;margin-bottom:5px;font-size:5px;color:var(--muted)">${dn[i]}: ${d.desc}</div>`).join('')}`;
+}
+
+// ── ACHIEVEMENTS ──
+function checkAchievements(){
+  ACHIEVEMENTS.forEach(a=>{
+    if(!S.achievements.includes(a.id)&&a.check(S)){
+      S.achievements.push(a.id);sfxAchieve();showBanner('★ LORPEN BERRIA: '+a.name+' '+a.icon,'achieve');saveGame(true);
+    }
+  });
+}
+function renderAchievements(){
+  const al=document.getElementById('achieve-list');if(!al)return;
+  al.innerHTML=ACHIEVEMENTS.map(a=>{const u=S.achievements.includes(a.id);
+    return`<div class="achieve-item ${u?'unlocked':'locked'}">
+      <div class="achieve-icon">${a.icon}</div>
+      <div class="achieve-info"><div class="achieve-name">${a.name}</div><div class="achieve-desc">${a.desc}</div></div>
+      ${u?'<div style="font-size:10px;color:var(--green)">✓</div>':''}
+    </div>`;}).join('');
+}
+
+// ── HELPERS ──
+function esc(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+function similarity(a,b){
+  if(a===b)return 1;const l=a.length>b.length?a:b,sh=a.length>b.length?b:a;if(!l.length)return 1;
+  const d=Array.from({length:l.length+1},(_,i)=>Array.from({length:sh.length+1},(_,j)=>j===0?i:i===0?j:0));
+  for(let i=1;i<=l.length;i++)for(let j=1;j<=sh.length;j++)d[i][j]=l[i-1]===sh[j-1]?d[i-1][j-1]:1+Math.min(d[i-1][j],d[i][j-1],d[i-1][j-1]);
+  return(l.length-d[l.length][sh.length])/l.length;
+}
+
+// ── START ──
+if(window.speechSynthesis) window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
+initStart();
+</script>
+</body>
+</html>
